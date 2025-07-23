@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Ластівка Shop</title>
+</head>
+<body>
+    <div id="auth_gif_background"></div>
+    <div id="root">
+        
+        <!-- ЕКРАН АВТОРІЗАЦІЇ -->
+        <div id="auth-screen" class="auth-screen visible">
+            <div class="auth-card">
+                <div class="auth-content">
+                    <div class="auth-scroll-area">
+                        <h1>Вітаємо у веб-магазині "Ластівка"!</h1>
+                        <p>Увійдіть одразу або при замовленні</p>
+                        <div class="auth-form">
+                            <input type="text" id="auth-name" placeholder="Ім'я*">
+                            <input type="text" id="auth-surname" placeholder="Прізвище*">
+                            <input type="tel" id="auth-phone" placeholder="Номер телефону*">
+                        </div>
+                        <button id="share-phone-btn" class="action-button blue">
+                            <span>📞</span>Надати номер з Телеграму
+                        </button>
+                        <div class="auth-actions">
+                            <button id="auth-later-btn" class="action-button gray">Увійти як гість</button>
+                            <button id="auth-confirm-btn" class="action-button green">Підтвердити</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ОСНОВНИЙ ДОДАТОК -->
+        <div id="app-main" class="hidden">
+            <div id="contacts-bar" class="contacts-bar">
+                <span>+380 (</span><img src="/images/sim_operators.jpg" alt="Operators"><span>) 733 4095</span>
+            </div>
+            <div id="cart-panel" class="cart-panel">
+                <div class="cart-panel-info">
+                    <span class="cart-panel-title">Кошик</span>
+                    <span id="cart-total-price">0.00 грн</span>
+                </div>
+                <div id="cart-panel-previews" class="cart-panel-previews"></div>
+            </div>
+            
+            <div class="app-container">
+                <div class="page-wrapper">
+                    <div id="page-info" class="page">
+                        <h2>Інфо</h2>
+                        <!-- Майбутній вміст сторінки Інфо -->
+                    </div>
+                    
+                    <div id="page-orders" class="page orders-page">
+                        <div id="product-view-3d" class="product-view-3d">
+                            <div class="interaction-zone"></div>
+                            <div class="scene">
+                                <div id="product-box" class="box">
+                                    <div class="face front"></div>
+                                    <div class="face back"></div>
+                                    <div class="face left"></div>
+                                    <div class="face right"></div>
+                                    <div class="face top"></div>
+                                    <div class="face bottom"></div>
+                                </div>
+                            </div>
+                            <div class="product-info-overlay">
+                                <h2 id="product-name-3d">Назва</h2>
+                                <div class="add-to-cart-wrapper">
+                                    <button id="add-to-cart-3d-btn" class="action-button green">Додати</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bottom-slider-container">
+                            <div class="swiper product-slider">
+                                <div class="swiper-wrapper" id="products-slider-wrapper">
+                                    <!-- Сюди будуть завантажуватися слайди з товарами -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="page-profile" class="page">
+                        <h2>Профіль</h2>
+                        <!-- Майбутній вміст сторінки Профіль -->
+                    </div>
+                </div>
+            </div>
+            
+            <nav id="bottom-nav" class="bottom-nav">
+                <button class="nav-btn" data-page-index="0"><span>Інфо</span></button>
+                <button class="nav-btn active" data-page-index="1"><span>Замовлення</span></button>
+                <button class="nav-btn" data-page-index="2"><span>Профіль</span></button>
+            </nav>
+        </div>
+    </div>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>

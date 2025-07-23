@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="database.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="1"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="1565"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><table title="products" custom_title="0" dock_id="1" table="4,8:mainproducts"/><dock_state state="000000ff00000000fd0000000100000002000008b8000004f8fc0100000001fb000000160064006f0063006b00420072006f00770073006500310100000000000008b80000012e00ffffff000002790000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings><table schema="main" name="products" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="35"/><column index="2" value="74"/><column index="3" value="47"/><column index="4" value="294"/><column index="5" value="60"/><column index="6" value="102"/><column index="7" value="87"/><column index="8" value="1386"/></column_widths><filter_values/><conditional_formats><column index="2"/></conditional_formats><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table></browse_table_settings></tab_browse><tab_sql><sql name="SQL 1*">
+-- ID 181: Фіточай Ластівка Ананас 1,5 г №20
+UPDATE products SET image_sides = 'images/l_ananas_front.png,images/l_ananas_back.png,images/l_ananas_left.png,images/l_ananas_right.png,images/l_ananas_top.png,images/l_ananas_bottom.png' WHERE id = 181;
+
+-- ID 273: Фіточай Літаюча Ластівка Екстра 3,2г №20
+UPDATE products SET image_sides = 'images/ll_extra_front.png,images/ll_extra_back.png,images/ll_extra_left.png,images/ll_extra_right.png,images/ll_extra_top.png,images/ll_extra_bottom.png' WHERE id = 273;
+
+-- ID 266: Фіточай Літаюча Ластівка 3,0г №20
+UPDATE products SET image_sides = 'images/ll_front.png,images/ll_back.png,images/ll_left.png,images/ll_right.png,images/ll_top.png,images/ll_bottom.png' WHERE id = 266;
+
+-- ID 549: Фіточай Ластівка Імбир 3,0г №20
+UPDATE products SET image_sides = 'images/l_imbir_3_0_front.png,images/l_imbir_3_0_back.png,images/l_imbir_3_0_left.png,images/l_imbir_3_0_right.png,images/l_imbir_3_0_top.png,images/l_imbir_3_0_bottom.png' WHERE id = 549;
+
+-- ID 198: Фіточай Ластівка Імбир 1,5 г №20
+UPDATE products SET image_sides = 'images/l_imbir_front.png,images/l_imbir_back.png,images/l_imbir_left.png,images/l_imbir_right.png,images/l_imbir_top.png,images/l_imbir_bottom.png' WHERE id = 198;
+
+-- ID 280: Фіточай Ластівка Лимон 3,0г №20
+UPDATE products SET image_sides = 'images/l_limon_front.png,images/l_limon_back.png,images/l_limon_left.png,images/l_limon_right.png,images/l_limon_top.png,images/l_limon_bottom.png' WHERE id = 280;
+
+-- ID 570: Фіточай Чорний Дракон суперспалювач жира 3,0г №20
+UPDATE products SET image_sides = 'images/black_dragon_front.png,images/black_dragon_back.png,images/black_dragon_left.png,images/black_dragon_right.png,images/black_dragon_top.png,images/black_dragon_bottom.png' WHERE id = 570;
+
+-- ID 242: Фіточай Літаюча Ластівка Яблуко 3,0г №20
+UPDATE products SET image_sides = 'images/ll_yabluko_front.png,images/ll_yabluko_back.png,images/ll_yabluko_left.png,images/ll_yabluko_right.png,images/ll_yabluko_top.png,images/ll_yabluko_bottom.png' WHERE id = 242;
+
+-- ID 235: Фіточай Літаюча Ластівка Суниця 3,0г №20
+UPDATE products SET image_sides = 'images/ll_sunytsya_front.png,images/ll_sunytsya_back.png,images/ll_sunytsya_left.png,images/ll_sunytsya_right.png,images/ll_sunytsya_top.png,images/ll_sunytsya_bottom.png' WHERE id = 235;
+
+-- ID 259: Фіточай Літаюча Ластівка Ананас 3,0г №20
+UPDATE products SET image_sides = 'images/ll_ananas_front.png,images/ll_ananas_back.png,images/ll_ananas_left.png,images/ll_ananas_right.png,images/ll_ananas_top.png,images/ll_ananas_bottom.png' WHERE id = 259;
+
+-- ID 297: Фіточай Сила Тигра 3,0г №20
+UPDATE products SET image_sides = 'images/sila_tigra_front.png,images/sila_tigra_back.png,images/sila_tigra_left.png,images/sila_tigra_right.png,images/sila_tigra_top.png,images/sila_tigra_bottom.png' WHERE id = 297;
+
+-- ID 211: Фіточай Ластівка Малина 1,5 г №20
+UPDATE products SET image_sides = 'images/l_malyna_1_5_front.png,images/l_malyna_1_5_back.png,images/l_malyna_1_5_left.png,images/l_malyna_1_5_right.png,images/l_malyna_1_5_top.png,images/l_malyna_1_5_bottom.png' WHERE id = 211;
+
+-- ID 204: Фіточай Лісові Ягоди 1,5 г №20
+UPDATE products SET image_sides = 'images/l_lisovi_yagody_front.png,images/l_lisovi_yagody_back.png,images/l_lisovi_yagody_left.png,images/l_lisovi_yagody_right.png,images/l_lisovi_yagody_top.png,images/l_lisovi_yagody_bottom.png' WHERE id = 204;
+
+-- ID 174: Фіточай Ластівка Екстра 1,5 г №20
+UPDATE products SET image_sides = 'images/l_extra_front.png,images/l_extra_back.png,images/l_extra_left.png,images/l_extra_right.png,images/l_extra_top.png,images/l_extra_bottom.png' WHERE id = 174;
+
+-- ID 587: Фіточай ЛЮШАНЬДЗЮ 3,0г №20
+UPDATE products SET image_sides = 'images/lushandzyu_front.png,images/lushandzyu_back.png,images/lushandzyu_left.png,images/lushandzyu_right.png,images/lushandzyu_top.png,images/lushandzyu_bottom.png' WHERE id = 587;
+
+-- ID 556: Фіточай Літаюча Ластівка 3,0г Око Дракона №20
+UPDATE products SET image_sides = 'images/ll_oko_drakona_front.png,images/ll_oko_drakona_back.png,images/ll_oko_drakona_left.png,images/ll_oko_drakona_right.png,images/ll_oko_drakona_top.png,images/ll_oko_drakona_bottom.png' WHERE id = 556;
+
+COMMIT;</sql><current_tab id="0"/></tab_sql></sqlb_project>
