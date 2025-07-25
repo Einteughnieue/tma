@@ -11,6 +11,7 @@
     "vite": "^7.0.4"
   },
   "dependencies": {
+    "sqlite3": "^5.1.7",
     "swiper": "^11.2.10"
   }
 }
