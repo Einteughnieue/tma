@@ -3,7 +3,7 @@
 .product-info-overlay{display:none} /* Старий контейнер для кнопки нам більше не потрібен */
 .add-to-cart-wrapper{
     position: absolute;
-    bottom: calc(100vh * 4 / 13 - 38px); /* 5/13 висоти екрану мінус половина висоти кнопки */
+    bottom: calc(100vh * 5 / 13 - 38px); /* 5/13 висоти екрану мінус половина висоти кнопки */
     left: 50%;
     transform: translateX(-50%);
     z-index: 15;
