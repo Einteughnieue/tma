@@ -1,12 +1,8 @@
-// ================== ФАЙЛ: /src/main.js (ФІНАЛЬНА Повна Версія) ================== */
-
-// ІМПОРТУЄМО SWIPER, ЯК ТИ І ХОТІВ
 import Swiper from 'swiper';
-import 'swiper/css'; // Vite сам "зрозуміє" цей CSS і додасть на сторінку
-import './style.css'; // Імпортуємо наші головні стилі
+import 'swiper/css';
+import './style.css';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // ----------------- ІНІЦІАЛІЗАЦІЯ І DOM ЕЛЕМЕНТИ -----------------
     const tg = window.Telegram?.WebApp;
     if (tg) { tg.ready(); tg.expand(); }
 
@@ -14,26 +10,29 @@ document.addEventListener('DOMContentLoaded', () => {
     let allProducts = [], cart = [], currentUser = {}, isAuthorized = false, current3DProductIndex = -1, productSwiper, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout;
     const DEFAULT_ROTATION_X = -20, DEFAULT_ROTATION_Y = -30, DEFAULT_SCALE = 1.0, RETURN_DELAY = 2000;
 
-    // ----------------- ОСНОВНІ ФУНКЦІЇ -----------------
     function startApp(config) {
         isAuthorized = config.authorized || false;
         if (isAuthorized) currentUser = config.user;
-        authScreen.classList.remove('visible'); authGifBackground.style.opacity = '0';
+        authScreen.classList.remove('visible');
+        authGifBackground.style.opacity = '0';
         setTimeout(() => { appMain.classList.remove('hidden'); appMain.style.opacity = '1'; authGifBackground.style.display = 'none'; }, 500);
         initializeMainApp();
     }
+    
     function initializeMainApp() { goToPage(1); fetchAndRenderPreviews(); updateCart(); }
     function goToPage(pageIndex) { if (pageWrapper) pageWrapper.style.transform = `translateX(-${pageIndex * 100 / 3}%)`; navButtons.forEach((btn, idx) => btn.classList.toggle('active', idx === pageIndex)); }
     function addToCart(productId) {
         const productToAdd = allProducts.find(p => p.id === productId);
         if (productToAdd) { cart.push(productToAdd); updateCart(); tg?.HapticFeedback.notificationOccurred('success'); }
     }
+    
     function updateCart() {
         cartPanel.classList.toggle('visible', cart.length > 0);
         const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
         cartTotalPrice.textContent = `${totalPrice.toFixed(2)} грн`;
-        cartPanelPreviews.innerHTML = `<div class="cart-panel-previews-item"><img src="/${item.image_url}" alt=""></div>`;
+        cartPanelPreviews.innerHTML = cart.map(item => `<div class="cart-panel-previews-item"><img src="${item.image_url}" alt=""></div>`).join('');
     }
+
     async function fetchAndRenderPreviews() {
         try {
             allProducts = await fetch('/api/products').then(res => res.json());
@@ -41,13 +40,14 @@ document.addEventListener('DOMContentLoaded', () => {
             allProducts.forEach(product => {
                 const slide = document.createElement('div');
                 slide.className = 'swiper-slide';
-                slide.innerHTML = `<div class="product-preview" data-product-id="${product.id}"><img class="product-preview-img" src="/${product.image_url}" alt="${product.name_ua}"><div class="product-preview-info"><h3>${product.name_ua}</h3><p class="short-description">${product.description_short_ua || ''}</p><p class="full-description">${product.description_ua || ''}</p></div></div>`;
+                slide.innerHTML = `<div class="product-preview" data-product-id="${product.id}"><img class="product-preview-img" src="${product.image_url}" alt="${product.name_ua}"><div class="product-preview-info"><h3>${product.name_ua}</h3><p class="short-description">${product.description_short_ua || ''}</p><p class="full-description">${product.description_ua || ''}</p></div></div>`;
                 productsSliderWrapper.appendChild(slide);
             });
             initSwiper();
             if (allProducts.length > 0) update3DView(0);
         } catch(e) { console.error(e); }
     }
+    
     function initSwiper() {
         productSwiper = new Swiper('.product-slider', {
             effect: 'coverflow', grabCursor: true, centeredSlides: true, loop: true, slidesPerView: 3,
@@ -55,14 +55,26 @@ document.addEventListener('DOMContentLoaded', () => {
             on: { slideChange: function() { const activeSlide = this.slides[this.activeIndex]; if (!activeSlide) return; const preview = activeSlide.querySelector('.product-preview'); if (!preview) return; const productId = parseInt(preview.dataset.productId); const productIndex = allProducts.findIndex(p => p.id === productId); if(productIndex > -1) update3DView(productIndex); } }
         });
     }
+
     function update3DView(productIndex) {
-        if (productIndex < 0 || productIndex >= allProducts.length) return; current3DProductIndex = productIndex;
+        if (productIndex < 0 || productIndex >= allProducts.length) return;
+        current3DProductIndex = productIndex;
         document.querySelectorAll('.product-preview').forEach(el => el.classList.remove('active-slide-preview'));
-        const activeSlide = productsSliderWrapper.querySelector(`[data-product-id='${allProducts[productIndex].id}']`); activeSlide?.classList.add('active-slide-preview');
-        const product = allProducts[current3DProductIndex], sides = product.image_sides.split(','); if (sides.length < 6) return;
-        productBox.querySelector('.front').style.backgroundImage = `url(/${sides[0]})`; productBox.querySelector('.back').style.backgroundImage = `url(/${sides[1]})`; productBox.querySelector('.left').style.backgroundImage = `url(/${sides[2]})`; productBox.querySelector('.right').style.backgroundImage = `url(/${sides[3]})`; productBox.querySelector('.top').style.backgroundImage = `url(/${sides[4]})`; productBox.querySelector('.bottom').style.backgroundImage = `url(/${sides[5]})`;
-        addToCart3DBtn.textContent = 'Додати';
+        const activeSlide = productsSliderWrapper.querySelector(`[data-product-id='${allProducts[productIndex].id}']`);
+        activeSlide?.classList.add('active-slide-preview');
+        const product = allProducts[current3DProductIndex];
+        const sides = product.image_sides.split(',');
+        if (sides.length < 6) return;
+        productBox.querySelector('.front').style.backgroundImage = `url(${sides[0]})`;
+        productBox.querySelector('.back').style.backgroundImage = `url(${sides[1]})`;
+        productBox.querySelector('.left').style.backgroundImage = `url(${sides[2]})`;
+        productBox.querySelector('.right').style.backgroundImage = `url(${sides[3]})`;
+        productBox.querySelector('.top').style.backgroundImage = `url(${sides[4]})`;
+        productBox.querySelector('.bottom').style.backgroundImage = `url(${sides[5]})`;
+        // НАЗВА БІЛЬШЕ НЕ ОНОВЛЮЄТЬСЯ
+        addToCart3DBtn.textContent = `Додати за ${product.price.toFixed(2)} грн`;
     }
+
     function updateTransform() { productBox.style.transform = `rotateX(${rotationX}deg) rotateY(${rotationY}deg) scale(${scale})`; }
     function resetToDefaultPosition() { productBox.style.transition = 'transform 1s cubic-bezier(0.4, 0, 0.2, 1)'; rotationX = DEFAULT_ROTATION_X; rotationY = DEFAULT_ROTATION_Y; scale = DEFAULT_SCALE; updateTransform(); }
     function scheduleReturnToDefault() { clearTimeout(returnTimeout); returnTimeout = setTimeout(resetToDefaultPosition, RETURN_DELAY); }
