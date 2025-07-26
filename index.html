@@ -9,11 +9,9 @@
     <div id="auth_gif_background"></div>
     <div id="root">
         
-        <!-- ЕКРАН АВТОРІЗАЦІЇ -->
         <div id="auth-screen" class="auth-screen visible">
             <div class="auth-card"><div class="auth-content"><div class="auth-scroll-area"><h1>Вітаємо у веб-магазині "Ластівка"!</h1><p>Увійдіть одразу або при замовленні</p><div class="auth-form"><input type="text" id="auth-name" placeholder="Ім'я*"><input type="text" id="auth-surname" placeholder="Прізвище*"><input type="tel" id="auth-phone" placeholder="Номер телефону*"></div><button id="share-phone-btn" class="action-button blue"><span>📞</span>Надати номер з Телеграму</button><div class="auth-actions"><button id="auth-later-btn" class="action-button gray">Увійти як гість</button><button id="auth-confirm-btn" class="action-button green">Підтвердити</button></div></div></div></div></div>
         
-        <!-- ОСНОВНИЙ ДОДАТОК -->
         <div id="app-main" class="hidden">
             <div id="contacts-bar" class="contacts-bar"><span>+380 (</span><img src="/images/sim_operators.jpg" alt="Operators"><span>) 733 4095</span></div>
             <div id="cart-panel" class="cart-panel"><div class="cart-panel-info"><span class="cart-panel-title">Кошик</span><span id="cart-total-price">0.00 грн</span></div><div id="cart-panel-previews" class="cart-panel-previews"></div></div>
@@ -22,10 +20,8 @@
                 <div class="page-wrapper">
                     <div id="page-info" class="page"><h2>Інфо</h2></div>
                     
-                    <!-- СТОРІНКА ЗАМОВЛЕННЯ -->
                     <div id="page-orders" class="page orders-page">
                         
-                        <!-- 3D СЦЕНА -->
                         <div id="product-view-3d" class="product-view-3d">
                             <div class="interaction-zone"></div>
                             <div class="scene">
@@ -35,19 +31,13 @@
                                     <div class="face top"></div><div class="face bottom"></div>
                                 </div>
                             </div>
-                            <!-- НАЗВА ВИДАЛЕНА ЗВІДСИ -->
                         </div>
                         
-                        <!-- КНОПКА "ДОДАТИ" ТЕПЕР ОКРЕМО -->
-                        <div class="add-to-cart-wrapper">
-                            <button id="add-to-cart-3d-btn" class="action-button green">Додати</button>
-                        </div>
-
-                        <!-- СЛАЙДЕР З ПРЕВ'Ю -->
                         <div class="bottom-slider-container">
-                            <div class="swiper product-slider">
-                                <div class="swiper-wrapper" id="products-slider-wrapper"></div>
+                             <div class="add-to-cart-wrapper">
+                                <button id="add-to-cart-3d-btn" class="action-button green">Додати</button>
                             </div>
+                            <div class="swiper product-slider"><div class="swiper-wrapper" id="products-slider-wrapper"></div></div>
                         </div>
                     </div>
 
