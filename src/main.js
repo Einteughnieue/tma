@@ -74,7 +74,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleInteractionMove(e) { e.preventDefault(); if (isPinching && e.touches && e.touches.length === 2) { const newDist = getPinchDistance(e.touches); scale += (newDist - initialPinchDistance) * 0.005; scale = Math.max(0.8, Math.min(2.0, scale)); updateTransform(); initialPinchDistance = newDist; } else if (isDragging && e.touches && e.touches.length === 1) { handleDragMove(e.touches[0].clientX, e.touches[0].clientY); } else if (isDragging && !e.touches) { handleDragMove(e.clientX, e.clientY); } }
     function handleInteractionEnd(e) { e.preventDefault(); if (isInteracting) { isInteracting = isDragging = isPinching = false; scheduleReturnToDefault(); } }
 
-    if (tg?.initDataUnsafe?.user) { currentUser.id = tg.initDataUnsafe.user.id; nameInput..value = tg.initDataUnsafe.user.first_name || ""; }
+    // ВИПРАВЛЕНО ТУТ
+    if (tg?.initDataUnsafe?.user) { 
+        currentUser.id = tg.initDataUnsafe.user.id; 
+        nameInput.value = tg.initDataUnsafe.user.first_name || ""; 
+    }
+
     authLaterBtn.addEventListener('click', () => startApp({ authorized: false }));
     authConfirmBtn.addEventListener('click', () => { startApp({ authorized: true }); });
     navButtons.forEach((button, index) => button.addEventListener('click', () => goToPage(index)));
