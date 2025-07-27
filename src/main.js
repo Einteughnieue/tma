@@ -6,9 +6,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const tg = window.Telegram?.WebApp;
     if (tg) { tg.ready(); tg.expand(); }
 
-    const authScreen = document.getElementById('auth-screen'), appMain = document.getElementById('app-main'), authGifBackground = document.getElementById('auth_gif_background'), pageWrapper = document.querySelector('.page-wrapper'), navButtons = document.querySelectorAll('.nav-btn'), productsSliderWrapper = document.getElementById('products-slider-wrapper'), nameInput = document.getElementById('auth-name'), surnameInput = document.getElementById('auth-surname'), phoneInput = document.getElementById('auth-phone'), sharePhoneBtn = document.getElementById('share-phone-btn'), authLaterBtn = document.getElementById('auth-later-btn'), authConfirmBtn = document.getElementById('auth-confirm-btn'), productBox = document.getElementById('product-box'), addToCart3DBtn = document.getElementById('add-to-cart-3d-btn'), interactionZone = document.querySelector('.interaction-zone'), cartPanel = document.getElementById('cart-panel'), cartPanelPreviews = document.getElementById('cart-panel-previews'), cartTotalPrice = document.getElementById('cart-total-price');
+    const authScreen = document.getElementById('auth-screen'), appMain = document.getElementById('app-main'), authGifBackground = document.getElementById('auth_gif_background'), pageWrapper = document.querySelector('.page-wrapper'), navButtons = document.querySelectorAll('.nav-btn'), productsSliderWrapper = document.getElementById('products-slider-wrapper'), nameInput = document.getElementById('auth-name'), surnameInput = document.getElementById('auth-surname'), phoneInput = document.getElementById('auth-phone'), sharePhoneBtn = document.getElementById('share-phone-btn'), authLaterBtn = document.getElementById('auth-later-btn'), authConfirmBtn = document.getElementById('auth-confirm-btn'), productBox = document.getElementById('product-box'), addToCart3DBtn = document.getElementById('add-to-cart-btn'), interactionZone = document.querySelector('.interaction-zone'), cartPanel = document.getElementById('cart-panel'), cartPanelPreviews = document.getElementById('cart-panel-previews'), cartTotalPrice = document.getElementById('cart-total-price');
+    const bottomSheet = document.getElementById('bottom-sheet'), sheetHandle = document.querySelector('.sheet-handle');
+    const decreaseBtn = document.getElementById('decrease-quantity'), increaseBtn = document.getElementById('increase-quantity'), quantityCounter = document.getElementById('quantity-counter');
+    
     let allProducts = [], cart = [], currentUser = {}, isAuthorized = false, current3DProductIndex = -1, productSwiper, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout;
     const DEFAULT_ROTATION_X = -20, DEFAULT_ROTATION_Y = -30, DEFAULT_SCALE = 1.0, RETURN_DELAY = 2000;
+    let quantity = 1;
 
     function startApp(config) {
         isAuthorized = config.authorized || false; if (isAuthorized) currentUser = config.user;
@@ -16,21 +20,18 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => { appMain.classList.remove('hidden'); appMain.style.opacity = '1'; authGifBackground.style.display = 'none'; }, 500);
         initializeMainApp();
     }
-    
     function initializeMainApp() { goToPage(1); fetchAndRenderPreviews(); updateCart(); }
-    function goToPage(pageIndex) { if (pageWrapper) pageWrapper.style.transform = `translateX(-${pageIndex * 100 / 3}%)`; navButtons.forEach((btn, idx) => btn.classList.toggle('active', idx === pageIndex)); tg?.HapticFeedback.impactOccurred('light'); }
-    function addToCart(productId) {
+    function goToPage(pageIndex) { if (pageWrapper) pageWrapper.style.transform = `translateX(-${pageIndex * 100 / 3}%)`; navButtons.forEach((btn, idx) => { btn.classList.toggle('active', idx === pageIndex); }); tg?.HapticFeedback.impactOccurred('light'); }
+    function addToCart(productId, count) {
         const productToAdd = allProducts.find(p => p.id === productId);
-        if (productToAdd) { cart.push(productToAdd); updateCart(); tg?.HapticFeedback.notificationOccurred('success'); }
+        if (productToAdd) { for(let i=0; i < count; i++) cart.push(productToAdd); updateCart(); tg?.HapticFeedback.notificationOccurred('success'); quantity = 1; quantityCounter.textContent = quantity; }
     }
-    
     function updateCart() {
         cartPanel.classList.toggle('visible', cart.length > 0);
         const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
         cartTotalPrice.textContent = `${totalPrice.toFixed(2)} грн`;
         cartPanelPreviews.innerHTML = cart.map(item => `<div class="cart-panel-previews-item"><img src="${item.image_url}" alt=""></div>`).join('');
     }
-
     async function fetchAndRenderPreviews() {
         try {
             allProducts = await fetch('/api/products').then(res => res.json());
@@ -45,24 +46,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (allProducts.length > 0) update3DView(0);
         } catch(e) { console.error(e); }
     }
-    
     function initSwiper() {
         productSwiper = new Swiper('.product-slider', {
             effect: 'creative', grabCursor: true, centeredSlides: true, loop: true, slidesPerView: 'auto',
-            creativeEffect: {
-                prev: { shadow: true, translate: ['-120%', 0, -500], rotate: [0,0, -20] },
-                next: { shadow: true, translate: ['120%', 0, -500], rotate: [0,0, 20] },
-            },
+            creativeEffect: { prev: { shadow: true, translate: ['-120%', 0, -500], rotate: [0,0,-20] }, next: { shadow: true, translate: ['120%', 0, -500], rotate: [0,0,20] }, },
             on: { slideChange: function() { const activeSlide = this.slides[this.activeIndex]; if (!activeSlide) return; const preview = activeSlide.querySelector('.product-preview'); if (!preview) return; const productId = parseInt(preview.dataset.productId); const productIndex = allProducts.findIndex(p => p.id === productId); if(productIndex > -1) update3DView(productIndex); } }
         });
     }
-
     function update3DView(productIndex) {
         if (productIndex < 0 || productIndex >= allProducts.length) return; current3DProductIndex = productIndex;
         const product = allProducts[current3DProductIndex], sides = product.image_sides.split(','); if (sides.length < 6) return;
         productBox.querySelector('.front').style.backgroundImage = `url(/${sides[0]})`; productBox.querySelector('.back').style.backgroundImage = `url(/${sides[1]})`; productBox.querySelector('.left').style.backgroundImage = `url(/${sides[2]})`; productBox.querySelector('.right').style.backgroundImage = `url(/${sides[3]})`; productBox.querySelector('.top').style.backgroundImage = `url(/${sides[4]})`; productBox.querySelector('.bottom').style.backgroundImage = `url(/${sides[5]})`;
     }
-
     function updateTransform() { productBox.style.transform = `rotateX(${rotationX}deg) rotateY(${rotationY}deg) scale(${scale})`; }
     function resetToDefaultPosition() { productBox.style.transition = 'transform 1s cubic-bezier(0.4, 0, 0.2, 1)'; rotationX = DEFAULT_ROTATION_X; rotationY = DEFAULT_ROTATION_Y; scale = DEFAULT_SCALE; updateTransform(); }
     function scheduleReturnToDefault() { clearTimeout(returnTimeout); returnTimeout = setTimeout(resetToDefaultPosition, RETURN_DELAY); }
@@ -70,22 +65,25 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleDragMove(x, y) { if (!isDragging) return; rotationY += (x - previousX) * 0.5; rotationX -= (y - previousY) * 0.5; rotationX = Math.max(-60, Math.min(20, rotationX)); updateTransform(); previousX = x; previousY = y; }
     let initialPinchDistance = 0;
     function getPinchDistance(touches) { return Math.hypot(touches[0].clientX-touches[1].clientX, touches[0].clientY-touches[1].clientY); }
-    function handleInteractionStart(e) { e.preventDefault(); clearTimeout(returnTimeout); productBox.style.transition = 'none'; if (e.touches && e.touches.length === 2 && !isInteracting) { isPinching = true; isInteracting = true; initialPinchDistance = getPinchDistance(e.touches); } else if (e.touches && e.touches.length === 1 && !isInteracting) { isDragging = true; isInteracting = true; handleDragStart(e.touches[0].clientX, e.touches[0].clientY); } else if (!e.touches && !isInteracting) { isDragging = true; isInteracting = true; handleDragStart(e.clientX, e.clientY); } }
-    function handleInteractionMove(e) { e.preventDefault(); if (isPinching && e.touches && e.touches.length === 2) { const newDist = getPinchDistance(e.touches); scale += (newDist - initialPinchDistance) * 0.005; scale = Math.max(0.8, Math.min(2.0, scale)); updateTransform(); initialPinchDistance = newDist; } else if (isDragging && e.touches && e.touches.length === 1) { handleDragMove(e.touches[0].clientX, e.touches[0].clientY); } else if (isDragging && !e.touches) { handleDragMove(e.clientX, e.clientY); } }
-    function handleInteractionEnd(e) { e.preventDefault(); if (isInteracting) { isInteracting = isDragging = isPinching = false; scheduleReturnToDefault(); } }
-
-    // ВИПРАВЛЕНО ТУТ
-    if (tg?.initDataUnsafe?.user) { 
-        currentUser.id = tg.initDataUnsafe.user.id; 
-        nameInput.value = tg.initDataUnsafe.user.first_name || ""; 
-    }
-
+    function handleInteractionStart(e) { if(e.target !== sheetHandle){ e.preventDefault(); clearTimeout(returnTimeout); productBox.style.transition = 'none'; if (e.touches && e.touches.length === 2 && !isInteracting) { isPinching = true; isInteracting = true; initialPinchDistance = getPinchDistance(e.touches); } else if (e.touches && e.touches.length === 1 && !isInteracting) { isDragging = true; isInteracting = true; handleDragStart(e.touches[0].clientX, e.touches[0].clientY); } else if (!e.touches && !isInteracting) { isDragging = true; isInteracting = true; handleDragStart(e.clientX, e.clientY); } } }
+    function handleInteractionMove(e) { if(e.target !== sheetHandle){ e.preventDefault(); if (isPinching && e.touches && e.touches.length === 2) { const newDist = getPinchDistance(e.touches); scale += (newDist - initialPinchDistance) * 0.005; scale = Math.max(0.8, Math.min(2.0, scale)); updateTransform(); initialPinchDistance = newDist; } else if (isDragging && e.touches && e.touches.length === 1) { handleDragMove(e.touches[0].clientX, e.touches[0].clientY); } else if (isDragging && !e.touches) { handleDragMove(e.clientX, e.clientY); } } }
+    function handleInteractionEnd(e) { if(e.target !== sheetHandle){ e.preventDefault(); if (isInteracting) { isInteracting = isDragging = isPinching = false; scheduleReturnToDefault(); } } }
+    let sheetStartY, sheetCurrentY, sheetIsDragging = false;
+    sheetHandle.addEventListener('touchstart', (e) => { sheetIsDragging = true; sheetStartY = e.touches[0].clientY; bottomSheet.style.transition = 'none'; });
+    window.addEventListener('touchmove', (e) => { if(sheetIsDragging){ sheetCurrentY = e.touches[0].clientY; const deltaY = sheetCurrentY - sheetStartY; bottomSheet.style.transform = `translateY(calc(${getComputedStyle(bottomSheet).transform.split(',')[5].replace(')','')}px + ${deltaY}px))`; sheetStartY = sheetCurrentY; } });
+    window.addEventListener('touchend', () => { if(sheetIsDragging){ sheetIsDragging = false; bottomSheet.style.transition = 'transform .4s cubic-bezier(.4,0,.2,1)'; const currentPos = bottomSheet.getBoundingClientRect().top, screenHeight = window.innerHeight; if(currentPos > screenHeight / 2) bottomSheet.style.transform = `translateY(calc(100% - (100vh * 5 / 13)))`; else bottomSheet.style.transform = `translateY(calc(100vh - 90vh))`; } });
+    
+    if (tg?.initDataUnsafe?.user) { currentUser.id = tg.initDataUnsafe.user.id; nameInput.value = tg.initDataUnsafe.user.first_name || ""; }
     authLaterBtn.addEventListener('click', () => startApp({ authorized: false }));
     authConfirmBtn.addEventListener('click', () => { startApp({ authorized: true }); });
     navButtons.forEach((button, index) => button.addEventListener('click', () => goToPage(index)));
-    addToCart3DBtn.addEventListener('click', () => { if(current3DProductIndex > -1) addToCart(allProducts[current3DProductIndex].id); });
+    addToCart3DBtn.addEventListener('click', () => { if(current3DProductIndex > -1) addToCart(allProducts[current3DProductIndex].id, quantity); });
+    decreaseBtn.addEventListener('click', ()=>{ if(quantity > 1){ quantity--; quantityCounter.textContent = quantity; }});
+    increaseBtn.addEventListener('click', ()=>{ quantity++; quantityCounter.textContent = quantity; });
+    
     interactionZone.addEventListener('mousedown', handleInteractionStart);
-    window.addEventListener('mousemove', handleInteractionMove); window.addEventListener('mouseup', handleInteractionEnd);
+    window.addEventListener('mousemove', handleInteractionMove);
+    window.addEventListener('mouseup', handleInteractionEnd);
     interactionZone.addEventListener('touchstart', handleInteractionStart, { passive: false });
     interactionZone.addEventListener('touchmove', handleInteractionMove, { passive: false });
     interactionZone.addEventListener('touchend', handleInteractionEnd, { passive: false });
