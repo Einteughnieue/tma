@@ -11,15 +11,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const DEFAULT_ROTATION_X = -20, DEFAULT_ROTATION_Y = -30, DEFAULT_SCALE = 1.0, RETURN_DELAY = 2000;
 
     function startApp(config) {
-        isAuthorized = config.authorized || false;
-        if (isAuthorized) currentUser = config.user;
+        isAuthorized = config.authorized || false; if (isAuthorized) currentUser = config.user;
         authScreen.classList.remove('visible'); authGifBackground.style.opacity = '0';
         setTimeout(() => { appMain.classList.remove('hidden'); appMain.style.opacity = '1'; authGifBackground.style.display = 'none'; }, 500);
         initializeMainApp();
     }
     
     function initializeMainApp() { goToPage(1); fetchAndRenderPreviews(); updateCart(); }
-    function goToPage(pageIndex) { if (pageWrapper) pageWrapper.style.transform = `translateX(-${pageIndex * 100 / 3}%)`; navButtons.forEach((btn, idx) => btn.classList.toggle('active', idx === pageIndex)); }
+    function goToPage(pageIndex) { if (pageWrapper) pageWrapper.style.transform = `translateX(-${pageIndex * 100 / 3}%)`; navButtons.forEach((btn, idx) => btn.classList.toggle('active', idx === pageIndex)); tg?.HapticFeedback.impactOccurred('light'); }
     function addToCart(productId) {
         const productToAdd = allProducts.find(p => p.id === productId);
         if (productToAdd) { cart.push(productToAdd); updateCart(); tg?.HapticFeedback.notificationOccurred('success'); }
@@ -29,37 +28,30 @@ document.addEventListener('DOMContentLoaded', () => {
         cartPanel.classList.toggle('visible', cart.length > 0);
         const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
         cartTotalPrice.textContent = `${totalPrice.toFixed(2)} грн`;
-        cartPanelPreviews.innerHTML = `<div class="cart-panel-previews-item"><img src="/${item.image_url}" alt=""></div>`;
+        cartPanelPreviews.innerHTML = cart.map(item => `<div class="cart-panel-previews-item"><img src="${item.image_url}" alt=""></div>`).join('');
     }
 
     async function fetchAndRenderPreviews() {
         try {
-            const response = await fetch('/api/products');
-            if (!response.ok) {
-                throw new Error(`Server responded with status: ${response.status}`);
-            }
-            allProducts = await response.json();
-            
+            allProducts = await fetch('/api/products').then(res => res.json());
             productsSliderWrapper.innerHTML = '';
             allProducts.forEach(product => {
                 const slide = document.createElement('div');
                 slide.className = 'swiper-slide';
-                slide.innerHTML = `<div class="product-preview" data-product-id="${product.id}"><img class="product-preview-img" src="/${product.image_url}" alt="${product.name_ua}"><div class="product-preview-info"><h3>${product.name_ua}</h3><p class.short-description">${product.description_short_ua || ''}</p><p class="full-description">${product.description_ua || ''}</p></div></div>`;
+                slide.innerHTML = `<div class="product-preview" data-product-id="${product.id}"><img class="product-preview-img" src="/${product.image_url}" alt="${product.name_ua}"></div>`;
                 productsSliderWrapper.appendChild(slide);
             });
             initSwiper();
             if (allProducts.length > 0) update3DView(0);
-        } catch(e) {
-             console.error("Не вдалося завантажити товари:", e);
-             productsSliderWrapper.innerHTML = `<p style="color: red; text-align: center;">Помилка завантаження товарів.</p>`;
-        }
+        } catch(e) { console.error(e); }
     }
     
     function initSwiper() {
         productSwiper = new Swiper('.product-slider', {
-            effect: 'coverflow', grabCursor: true, centeredSlides: true, loop: true, slidesPerView: 'auto',
-            coverflowEffect: {
-                rotate: 0, stretch: 10, depth: 100, modifier: 2.5, slideShadows: false,
+            effect: 'creative', grabCursor: true, centeredSlides: true, loop: true, slidesPerView: 'auto',
+            creativeEffect: {
+                prev: { shadow: true, translate: ['-120%', 0, -500], rotate: [0,0, -20] },
+                next: { shadow: true, translate: ['120%', 0, -500], rotate: [0,0, 20] },
             },
             on: { slideChange: function() { const activeSlide = this.slides[this.activeIndex]; if (!activeSlide) return; const preview = activeSlide.querySelector('.product-preview'); if (!preview) return; const productId = parseInt(preview.dataset.productId); const productIndex = allProducts.findIndex(p => p.id === productId); if(productIndex > -1) update3DView(productIndex); } }
         });
@@ -67,11 +59,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function update3DView(productIndex) {
         if (productIndex < 0 || productIndex >= allProducts.length) return; current3DProductIndex = productIndex;
-        document.querySelectorAll('.product-preview').forEach(el => el.classList.remove('active-slide-preview'));
-        const activeSlide = productsSliderWrapper.querySelector(`[data-product-id='${allProducts[productIndex].id}']`); activeSlide?.classList.add('active-slide-preview');
         const product = allProducts[current3DProductIndex], sides = product.image_sides.split(','); if (sides.length < 6) return;
         productBox.querySelector('.front').style.backgroundImage = `url(/${sides[0]})`; productBox.querySelector('.back').style.backgroundImage = `url(/${sides[1]})`; productBox.querySelector('.left').style.backgroundImage = `url(/${sides[2]})`; productBox.querySelector('.right').style.backgroundImage = `url(/${sides[3]})`; productBox.querySelector('.top').style.backgroundImage = `url(/${sides[4]})`; productBox.querySelector('.bottom').style.backgroundImage = `url(/${sides[5]})`;
     }
+
     function updateTransform() { productBox.style.transform = `rotateX(${rotationX}deg) rotateY(${rotationY}deg) scale(${scale})`; }
     function resetToDefaultPosition() { productBox.style.transition = 'transform 1s cubic-bezier(0.4, 0, 0.2, 1)'; rotationX = DEFAULT_ROTATION_X; rotationY = DEFAULT_ROTATION_Y; scale = DEFAULT_SCALE; updateTransform(); }
     function scheduleReturnToDefault() { clearTimeout(returnTimeout); returnTimeout = setTimeout(resetToDefaultPosition, RETURN_DELAY); }
@@ -83,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleInteractionMove(e) { e.preventDefault(); if (isPinching && e.touches && e.touches.length === 2) { const newDist = getPinchDistance(e.touches); scale += (newDist - initialPinchDistance) * 0.005; scale = Math.max(0.8, Math.min(2.0, scale)); updateTransform(); initialPinchDistance = newDist; } else if (isDragging && e.touches && e.touches.length === 1) { handleDragMove(e.touches[0].clientX, e.touches[0].clientY); } else if (isDragging && !e.touches) { handleDragMove(e.clientX, e.clientY); } }
     function handleInteractionEnd(e) { e.preventDefault(); if (isInteracting) { isInteracting = isDragging = isPinching = false; scheduleReturnToDefault(); } }
 
-    if (tg?.initDataUnsafe?.user) { currentUser.id = tg.initDataUnsafe.user.id; nameInput.value = tg.initDataUnsafe.user.first_name || ""; }
+    if (tg?.initDataUnsafe?.user) { currentUser.id = tg.initDataUnsafe.user.id; nameInput..value = tg.initDataUnsafe.user.first_name || ""; }
     authLaterBtn.addEventListener('click', () => startApp({ authorized: false }));
     authConfirmBtn.addEventListener('click', () => { startApp({ authorized: true }); });
     navButtons.forEach((button, index) => button.addEventListener('click', () => goToPage(index)));
