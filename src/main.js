@@ -9,11 +9,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const authScreen = document.getElementById('auth-screen'), appMain = document.getElementById('app-main'), authGifBackground = document.getElementById('auth_gif_background'), pageWrapper = document.querySelector('.page-wrapper'), navButtons = document.querySelectorAll('.nav-btn'), productsSliderWrapper = document.getElementById('products-slider-wrapper'), nameInput = document.getElementById('auth-name'), surnameInput = document.getElementById('auth-surname'), phoneInput = document.getElementById('auth-phone'), sharePhoneBtn = document.getElementById('share-phone-btn'), authLaterBtn = document.getElementById('auth-later-btn'), authConfirmBtn = document.getElementById('auth-confirm-btn'), productBox = document.getElementById('product-box'), addToCart3DBtn = document.getElementById('add-to-cart-btn'), interactionZone = document.querySelector('.interaction-zone');
     const bottomSheet = document.getElementById('bottom-sheet'), sheetToggleButton = document.getElementById('sheet-toggle-btn');
     const decreaseBtn = document.getElementById('decrease-quantity'), increaseBtn = document.getElementById('increase-quantity'), quantityCounter = document.getElementById('quantity-counter');
-    const sideCart = document.getElementById('side-cart'), sideCartContent = document.getElementById('side-cart-content');
+    const cartBtn = document.getElementById('cart-btn'), cartCounterEl = document.getElementById('cart-counter'), backToShopBtn = document.getElementById('back-to-shop-btn');
     
-    let allProducts = [], cart = [], currentUser = {}, isAuthorized = false, current3DProductIndex = -1, productSwiper, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout, cartHideTimeout;
+    let allProducts = [], cart = [], currentUser = {}, isAuthorized = false, current3DProductIndex = -1, productSwiper, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout;
     const DEFAULT_ROTATION_X = -20, DEFAULT_ROTATION_Y = -30, DEFAULT_SCALE = 1.0, RETURN_DELAY = 2000;
     let quantity = 1;
+    let lastActivePage = 1;
 
     function startApp(config) {
         isAuthorized = config.authorized || false; if (isAuthorized) currentUser = config.user;
@@ -22,17 +23,19 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeMainApp();
     }
     function initializeMainApp() { goToPage(1); fetchAndRenderPreviews(); }
-    function goToPage(pageIndex) { if (pageWrapper) pageWrapper.style.transform = `translateX(-${pageIndex * 100 / 3}%)`; navButtons.forEach((btn, idx) => { btn.classList.toggle('active', idx === pageIndex); }); tg?.HapticFeedback.impactOccurred('light'); }
+    function goToPage(pageIndex) {
+        if(pageIndex < 3) lastActivePage = pageIndex;
+        if (pageWrapper) pageWrapper.style.transform = `translateX(-${pageIndex * 100 / 4}%)`;
+        navButtons.forEach((btn, idx) => { btn.classList.toggle('active', idx === pageIndex); });
+        tg?.HapticFeedback.impactOccurred('light');
+    }
     function addToCart(productId, count) {
         const productToAdd = allProducts.find(p => p.id === productId);
-        if (productToAdd) { for(let i=0; i < count; i++) cart.push(productToAdd); showAndHideCart(); tg?.HapticFeedback.notificationOccurred('success'); quantity = 1; quantityCounter.textContent = quantity; }
+        if (productToAdd) { for(let i=0; i < count; i++) cart.push(productToAdd); updateCartCounter(); tg?.HapticFeedback.notificationOccurred('success'); quantity = 1; quantityCounter.textContent = quantity; }
     }
-    function showAndHideCart() {
-        clearTimeout(cartHideTimeout);
-        const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
-        sideCartContent.innerHTML = `<strong>Всього: ${cart.length} шт.</strong><br><span>Сума: ${totalPrice.toFixed(2)} грн</span>`;
-        sideCart.classList.add('visible');
-        cartHideTimeout = setTimeout(() => { sideCart.classList.remove('visible'); }, 2000);
+    function updateCartCounter() {
+        cartCounterEl.textContent = cart.length;
+        cartCounterEl.style.display = cart.length > 0 ? 'flex' : 'none';
     }
     async function fetchAndRenderPreviews() {
         try {
@@ -80,6 +83,9 @@ document.addEventListener('DOMContentLoaded', () => {
     decreaseBtn.addEventListener('click', ()=>{ if(quantity > 1){ quantity--; quantityCounter.textContent = quantity; }});
     increaseBtn.addEventListener('click', ()=>{ quantity++; quantityCounter.textContent = quantity; });
     
+    cartBtn.addEventListener('click', () => goToPage(3));
+    backToShopBtn.addEventListener('click', () => goToPage(lastActivePage));
+
     interactionZone.addEventListener('mousedown', handleInteractionStart);
     window.addEventListener('mousemove', handleInteractionMove);
     window.addEventListener('mouseup', handleInteractionEnd);

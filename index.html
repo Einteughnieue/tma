@@ -8,13 +8,7 @@
         <div id="app-main" class="hidden">
             <div id="contacts-bar" class="contacts-bar"><span>+380 (</span><img src="/images/sim_operators.jpg" alt="Operators"><span>) 733 4095</span></div>
             
-            <div id="side-cart" class="side-cart">
-                <div id="side-cart-content"></div>
-                <div class="side-cart-rules">
-                    <p>До 200грн оплата тільки онлайн.</p>
-                    <p>Від 500грн доставка безкоштовна!</p>
-                </div>
-            </div>
+            <button id="cart-btn" class="cart-btn"><span id="cart-counter">0</span>🧺</button>
 
             <div class="app-container">
                 <div class="page-wrapper">
@@ -29,6 +23,13 @@
                         </div>
                     </div>
                     <div id="page-profile" class="page"><h2>Профіль</h2></div>
+
+                    <div id="page-cart" class="page cart-page">
+                        <h2>Кошик</h2>
+                        <p>Тут буде повний вміст вашого кошика.</p>
+                        <div id="full-cart-items-container"></div>
+                        <button id="back-to-shop-btn" class="action-button green">Назад до магазину</button>
+                    </div>
                 </div>
             </div>
             <nav id="bottom-nav" class="bottom-nav"><button class="nav-btn" data-page-index="0"><span class="icon">ℹ️</span><span class="text">Інфо</span></button><button class="nav-btn active" data-page-index="1"><span class="icon">🛍️</span><span class="text">Замовлення</span></button><button class="nav-btn" data-page-index="2"><span class="icon">👤</span><span class="text">Профіль</span></button></nav>
