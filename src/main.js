@@ -51,10 +51,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function initSwiper() {
         productSwiper = new Swiper('.product-slider', {
-            effect: 'creative', direction: 'vertical', grabCursor: true, centeredSlides: true, loop: true, slidesPerView: 3,
+            effect: 'creative', direction: 'horizontal', grabCursor: true, centeredSlides: true, loop: true, slidesPerView: 3,
             creativeEffect: {
-                prev: { shadow: false, translate: [0, '-120%', -500], rotate: [-45, 0, 0] },
-                next: { shadow: false, translate: [0, '120%', -500], rotate: [45, 0, 0] },
+                prev: { shadow: false, translate: ['-120%', 0, -500], rotate: [0, -45, 0] },
+                next: { shadow: false, translate: ['120%', 0, -500], rotate: [0, 45, 0] },
             },
             on: { slideChange: function() { const activeSlide = this.slides[this.activeIndex]; if (!activeSlide) return; const preview = activeSlide.querySelector('.product-preview'); if (!preview) return; const productId = parseInt(preview.dataset.productId); const productIndex = allProducts.findIndex(p => p.id === productId); if(productIndex > -1) update3DView(productIndex); } }
         });
