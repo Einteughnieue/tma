@@ -8,10 +8,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const bottomSheet = document.getElementById('bottom-sheet'), sheetToggleButton = document.getElementById('sheet-toggle-btn');
     const decreaseBtn = document.getElementById('decrease-quantity'), increaseBtn = document.getElementById('increase-quantity'), quantityCounter = document.getElementById('quantity-counter');
     const sideCart = document.getElementById('side-cart'), sideCartContent = document.getElementById('side-cart-content'), cartMiniaturesWrapper = document.getElementById('cart-miniatures-wrapper');
+    const backToShopBtn = document.getElementById('back-to-shop-btn');
     
     let allProducts = [], cart = [], currentUser = {}, isAuthorized = false, current3DProductIndex = -1, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout, cartHideTimeout;
     const DEFAULT_ROTATION_X = -20, DEFAULT_ROTATION_Y = -30, DEFAULT_SCALE = 1.0, RETURN_DELAY = 2000;
     let quantity = 1;
+    let lastActivePage = 1;
 
     function startApp(config) {
         isAuthorized = config.authorized || false; if (isAuthorized) currentUser = config.user;
@@ -19,22 +21,27 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => { appMain.classList.remove('hidden'); appMain.style.opacity = '1'; authGifBackground.style.display = 'none'; }, 500);
         initializeMainApp();
     }
-    function initializeMainApp() { goToPage(1); fetchAndRenderPreviews(); updateCart(); }
-    function goToPage(pageIndex) { if (pageWrapper) pageWrapper.style.transform = `translateX(-${pageIndex * 100 / 3}%)`; navButtons.forEach((btn, idx) => { btn.classList.toggle('active', idx === pageIndex); }); tg?.HapticFeedback.impactOccurred('light'); }
+    function initializeMainApp() { goToPage(1); fetchAndRenderPreviews(); }
+    function goToPage(pageIndex) {
+        if(pageIndex < 3) lastActivePage = pageIndex;
+        if (pageWrapper) pageWrapper.style.transform = `translateX(-${pageIndex * 100 / 4}%)`;
+        navButtons.forEach((btn, idx) => { btn.classList.toggle('active', idx === pageIndex); });
+        tg?.HapticFeedback.impactOccurred('light');
+    }
     function addToCart(productId, count) {
         const productToAdd = allProducts.find(p => p.id === productId);
         if (productToAdd) { for(let i=0; i < count; i++) cart.push(productToAdd); updateCart(); showAndHideCart(); tg?.HapticFeedback.notificationOccurred('success'); quantity = 1; quantityCounter.textContent = quantity; }
     }
     function updateCart() {
-        const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
         if(sideCartContent){
+            const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
             if(cart.length === 0){ sideCartContent.innerHTML = 'Кошик порожній'; } 
             else { sideCartContent.innerHTML = `<strong>Всього: ${cart.length} шт.</strong><br><span>Сума: ${totalPrice.toFixed(2)} грн</span>`; }
         }
         if(cartMiniaturesWrapper){
             const maxVisible = Math.floor(cartMiniaturesWrapper.clientWidth / 58);
             cartMiniaturesWrapper.innerHTML = '';
-            const itemsToShow = cart.slice(0, maxVisible - 1);
+            const itemsToShow = cart.slice(0, maxVisible > 0 ? maxVisible - 1 : 0);
             itemsToShow.forEach(item => {
                 const miniature = document.createElement('div');
                 miniature.className = 'cart-miniature';
@@ -45,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const ellipsis = document.createElement('div');
                 ellipsis.className = 'cart-miniature ellipsis';
                 ellipsis.textContent = '...';
+                ellipsis.addEventListener('click', () => goToPage(3));
                 cartMiniaturesWrapper.appendChild(ellipsis);
             }
         }
@@ -68,11 +76,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (allProducts.length > 0) update3DView(0);
         } catch(e) { console.error(e); }
     }
+    
     function setupSimpleScroller() {
         const scroller = productsSliderWrapper;
-        scroller.style.scrollBehavior = 'smooth';
-        let isScrolling;
-        const highlightCenter = () => {
+        scroller.addEventListener('scroll', () => {
             const scrollerRect = scroller.getBoundingClientRect();
             const scrollerCenter = scrollerRect.left + scrollerRect.width / 2;
             let closestElement = null, minDistance = Infinity;
@@ -89,13 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const productIndex = allProducts.findIndex(p => p.id === productId);
                 if (productIndex > -1 && productIndex !== current3DProductIndex) update3DView(productIndex);
             }
-        };
-        scroller.addEventListener('scroll', ()=>{
-            window.clearTimeout(isScrolling);
-            isScrolling = setTimeout(highlightCenter, 150);
         });
-        highlightCenter();
+        setTimeout(() => { if(scroller.children[0]) scroller.children[0].classList.add('is-active'); }, 100);
     }
+
     function update3DView(productIndex) {
         if (productIndex < 0 || productIndex >= allProducts.length) return; current3DProductIndex = productIndex;
         const product = allProducts[current3DProductIndex], sides = product.image_sides.split(','); if (sides.length < 6) return;
@@ -121,6 +125,8 @@ document.addEventListener('DOMContentLoaded', () => {
     decreaseBtn.addEventListener('click', ()=>{ if(quantity > 1){ quantity--; quantityCounter.textContent = quantity; }});
     increaseBtn.addEventListener('click', ()=>{ quantity++; quantityCounter.textContent = quantity; });
     
+    backToShopBtn.addEventListener('click', () => goToPage(lastActivePage));
+
     interactionZone.addEventListener('mousedown', handleInteractionStart);
     window.addEventListener('mousemove', handleInteractionMove);
     window.addEventListener('mouseup', handleInteractionEnd);
