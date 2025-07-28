@@ -9,12 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const authScreen = document.getElementById('auth-screen'), appMain = document.getElementById('app-main'), authGifBackground = document.getElementById('auth_gif_background'), pageWrapper = document.querySelector('.page-wrapper'), navButtons = document.querySelectorAll('.nav-btn'), productsSliderWrapper = document.getElementById('products-slider-wrapper'), nameInput = document.getElementById('auth-name'), surnameInput = document.getElementById('auth-surname'), phoneInput = document.getElementById('auth-phone'), sharePhoneBtn = document.getElementById('share-phone-btn'), authLaterBtn = document.getElementById('auth-later-btn'), authConfirmBtn = document.getElementById('auth-confirm-btn'), productBox = document.getElementById('product-box'), addToCart3DBtn = document.getElementById('add-to-cart-btn'), interactionZone = document.querySelector('.interaction-zone');
     const bottomSheet = document.getElementById('bottom-sheet'), sheetToggleButton = document.getElementById('sheet-toggle-btn');
     const decreaseBtn = document.getElementById('decrease-quantity'), increaseBtn = document.getElementById('increase-quantity'), quantityCounter = document.getElementById('quantity-counter');
-    const cartBtn = document.getElementById('cart-btn'), cartCounterEl = document.getElementById('cart-counter'), backToShopBtn = document.getElementById('back-to-shop-btn');
+    const sideCart = document.getElementById('side-cart'), sideCartContent = document.getElementById('side-cart-content');
     
-    let allProducts = [], cart = [], currentUser = {}, isAuthorized = false, current3DProductIndex = -1, productSwiper, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout;
+    let allProducts = [], cart = [], currentUser = {}, isAuthorized = false, current3DProductIndex = -1, productSwiper, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout, cartHideTimeout;
     const DEFAULT_ROTATION_X = -20, DEFAULT_ROTATION_Y = -30, DEFAULT_SCALE = 1.0, RETURN_DELAY = 2000;
     let quantity = 1;
-    let lastActivePage = 1;
 
     function startApp(config) {
         isAuthorized = config.authorized || false; if (isAuthorized) currentUser = config.user;
@@ -23,19 +22,18 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeMainApp();
     }
     function initializeMainApp() { goToPage(1); fetchAndRenderPreviews(); }
-    function goToPage(pageIndex) {
-        if(pageIndex < 3) lastActivePage = pageIndex;
-        if (pageWrapper) pageWrapper.style.transform = `translateX(-${pageIndex * 100 / 4}%)`;
-        navButtons.forEach((btn, idx) => { btn.classList.toggle('active', idx === pageIndex); });
-        tg?.HapticFeedback.impactOccurred('light');
-    }
+    function goToPage(pageIndex) { if (pageWrapper) pageWrapper.style.transform = `translateX(-${pageIndex * 100 / 3}%)`; navButtons.forEach((btn, idx) => { btn.classList.toggle('active', idx === pageIndex); }); tg?.HapticFeedback.impactOccurred('light'); }
     function addToCart(productId, count) {
         const productToAdd = allProducts.find(p => p.id === productId);
-        if (productToAdd) { for(let i=0; i < count; i++) cart.push(productToAdd); updateCartCounter(); tg?.HapticFeedback.notificationOccurred('success'); quantity = 1; quantityCounter.textContent = quantity; }
+        if (productToAdd) { for(let i=0; i < count; i++) cart.push(productToAdd); showAndHideCart(); tg?.HapticFeedback.notificationOccurred('success'); quantity = 1; quantityCounter.textContent = quantity; }
     }
-    function updateCartCounter() {
-        cartCounterEl.textContent = cart.length;
-        cartCounterEl.style.display = cart.length > 0 ? 'flex' : 'none';
+    function showAndHideCart() {
+        clearTimeout(cartHideTimeout);
+        const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
+        if(cart.length === 0){ sideCartContent.innerHTML = 'Кошик порожній'; } 
+        else { sideCartContent.innerHTML = `<strong>Всього: ${cart.length} шт.</strong><br><span>Сума: ${totalPrice.toFixed(2)} грн</span>`; }
+        sideCart.classList.add('visible');
+        cartHideTimeout = setTimeout(() => { sideCart.classList.remove('visible'); }, 2000);
     }
     async function fetchAndRenderPreviews() {
         try {
@@ -44,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
             allProducts.forEach(product => {
                 const slide = document.createElement('div');
                 slide.className = 'swiper-slide';
-                slide.innerHTML = `<div class="product-preview" data-product-id="${product.id}"><img class="product-preview-img" src="/${product.image_url}" alt="${product.name_ua}"></div>`;
+                slide.innerHTML = `<div class="product-preview" data-product-id="${product.id}"><div class="product-preview-info"><h3>${product.name_ua}</h3><p class="short-description">${product.description_short_ua || ''}</p></div></div>`;
                 productsSliderWrapper.appendChild(slide);
             });
             initSwiper();
@@ -53,8 +51,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function initSwiper() {
         productSwiper = new Swiper('.product-slider', {
-            effect: 'creative', grabCursor: true, centeredSlides: true, loop: true, slidesPerView: 'auto',
-            creativeEffect: { prev: { shadow: true, translate: ['-120%', 0, -500], rotate: [0,0,-20] }, next: { shadow: true, translate: ['120%', 0, -500], rotate: [0,0,20] }, },
+            effect: 'creative', direction: 'vertical', grabCursor: true, centeredSlides: true, loop: true, slidesPerView: 3,
+            creativeEffect: {
+                prev: { shadow: false, translate: [0, '-120%', -500], rotate: [-45, 0, 0] },
+                next: { shadow: false, translate: [0, '120%', -500], rotate: [45, 0, 0] },
+            },
             on: { slideChange: function() { const activeSlide = this.slides[this.activeIndex]; if (!activeSlide) return; const preview = activeSlide.querySelector('.product-preview'); if (!preview) return; const productId = parseInt(preview.dataset.productId); const productIndex = allProducts.findIndex(p => p.id === productId); if(productIndex > -1) update3DView(productIndex); } }
         });
     }
@@ -83,9 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
     decreaseBtn.addEventListener('click', ()=>{ if(quantity > 1){ quantity--; quantityCounter.textContent = quantity; }});
     increaseBtn.addEventListener('click', ()=>{ quantity++; quantityCounter.textContent = quantity; });
     
-    cartBtn.addEventListener('click', () => goToPage(3));
-    backToShopBtn.addEventListener('click', () => goToPage(lastActivePage));
-
     interactionZone.addEventListener('mousedown', handleInteractionStart);
     window.addEventListener('mousemove', handleInteractionMove);
     window.addEventListener('mouseup', handleInteractionEnd);
