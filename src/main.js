@@ -1,5 +1,3 @@
-import Swiper from 'swiper';
-import 'swiper/css';
 import './style.css';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -11,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const decreaseBtn = document.getElementById('decrease-quantity'), increaseBtn = document.getElementById('increase-quantity'), quantityCounter = document.getElementById('quantity-counter');
     const sideCart = document.getElementById('side-cart'), sideCartContent = document.getElementById('side-cart-content');
     
-    let allProducts = [], cart = [], currentUser = {}, isAuthorized = false, current3DProductIndex = -1, productSwiper, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout, cartHideTimeout;
+    let allProducts = [], cart = [], currentUser = {}, isAuthorized = false, current3DProductIndex = -1, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout, cartHideTimeout;
     const DEFAULT_ROTATION_X = -20, DEFAULT_ROTATION_Y = -30, DEFAULT_SCALE = 1.0, RETURN_DELAY = 2000;
     let quantity = 1;
 
@@ -41,21 +39,41 @@ document.addEventListener('DOMContentLoaded', () => {
             productsSliderWrapper.innerHTML = '';
             allProducts.forEach(product => {
                 const slide = document.createElement('div');
-                slide.className = 'swiper-slide';
-                slide.innerHTML = `<div class="product-preview" data-product-id="${product.id}"><img class="product-preview-img" src="/${product.image_url}" alt="${product.name_ua}"></div>`;
+                slide.className = 'product-slide';
+                slide.innerHTML = `<div class="product-preview" data-product-id="${product.id}"><div class="product-preview-info"><h3>${product.name_ua}</h3><p class="short-description">${product.description_short_ua || ''}</p></div></div>`;
                 productsSliderWrapper.appendChild(slide);
             });
-            initSwiper();
+            setupSimpleScroller();
             if (allProducts.length > 0) update3DView(0);
         } catch(e) { console.error(e); }
     }
-    function initSwiper() {
-        productSwiper = new Swiper('.product-slider', {
-            effect: 'creative', grabCursor: true, centeredSlides: true, loop: true, slidesPerView: 'auto',
-            creativeEffect: { prev: { shadow: true, translate: ['-120%', 0, -500], rotate: [0,0,-20] }, next: { shadow: true, translate: ['120%', 0, -500], rotate: [0,0,20] }, },
-            on: { slideChange: function() { const activeSlide = this.slides[this.activeIndex]; if (!activeSlide) return; const preview = activeSlide.querySelector('.product-preview'); if (!preview) return; const productId = parseInt(preview.dataset.productId); const productIndex = allProducts.findIndex(p => p.id === productId); if(productIndex > -1) update3DView(productIndex); } }
+    
+    function setupSimpleScroller() {
+        const scroller = productsSliderWrapper;
+        scroller.addEventListener('scroll', () => {
+            const scrollerRect = scroller.getBoundingClientRect();
+            const scrollerCenter = scrollerRect.left + scrollerRect.width / 2;
+            let closestElement = null, minDistance = Infinity;
+            scroller.querySelectorAll('.product-slide').forEach(slide => {
+                const slideRect = slide.getBoundingClientRect();
+                const slideCenter = slideRect.left + slideRect.width / 2;
+                const distance = Math.abs(scrollerCenter - slideCenter);
+                if (distance < minDistance) { minDistance = distance; closestElement = slide; }
+                slide.classList.remove('is-active');
+            });
+            if (closestElement) {
+                closestElement.classList.add('is-active');
+                const productId = parseInt(closestElement.querySelector('.product-preview').dataset.productId);
+                const productIndex = allProducts.findIndex(p => p.id === productId);
+                if (productIndex > -1 && productIndex !== current3DProductIndex) update3DView(productIndex);
+            }
         });
+        // Перший запуск
+        setTimeout(() => {
+            if(scroller.children[0]) scroller.children[0].classList.add('is-active');
+        }, 100);
     }
+
     function update3DView(productIndex) {
         if (productIndex < 0 || productIndex >= allProducts.length) return; current3DProductIndex = productIndex;
         const product = allProducts[current3DProductIndex], sides = product.image_sides.split(','); if (sides.length < 6) return;
