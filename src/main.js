@@ -22,16 +22,13 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeMainApp();
     }
     function initializeMainApp() { goToPage(1); fetchAndRenderPreviews(); }
-    function goToPage(pageIndex) {
-        if(pageIndex < 3) lastActivePage = pageIndex;
-        if (pageWrapper) pageWrapper.style.transform = `translateX(-${pageIndex * 100 / 4}%)`;
-        navButtons.forEach((btn, idx) => { btn.classList.toggle('active', idx === pageIndex); });
-        tg?.HapticFeedback.impactOccurred('light');
-    }
+    function goToPage(pageIndex) { if (pageWrapper) pageWrapper.style.transform = `translateX(-${pageIndex * 100 / 4}%)`; navButtons.forEach((btn, idx) => { btn.classList.toggle('active', idx === pageIndex); }); tg?.HapticFeedback.impactOccurred('light'); }
     function addToCart(productId, count) {
         const productToAdd = allProducts.find(p => p.id === productId);
         if (productToAdd) { for(let i=0; i < count; i++) cart.push(productToAdd); updateCart(); showAndHideCart(); tg?.HapticFeedback.notificationOccurred('success'); quantity = 1; quantityCounter.textContent = quantity; }
     }
+    
+    // --- ПОЧАТОК ФІНАЛЬНИХ ВИПРАВЛЕНЬ ---
     function updateCart() {
         if(sideCartContent){
             const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
@@ -39,13 +36,18 @@ document.addEventListener('DOMContentLoaded', () => {
             else { sideCartContent.innerHTML = `<strong>Всього: ${cart.length} шт.</strong><br><span>Сума: ${totalPrice.toFixed(2)} грн</span>`; }
         }
         if(cartMiniaturesWrapper){
-            const maxVisible = Math.floor(cartMiniaturesWrapper.clientWidth / 58);
+            const maxVisible = Math.floor(cartMiniaturesWrapper.clientWidth / 58); // 50px + 8px gap
             cartMiniaturesWrapper.innerHTML = '';
-            const itemsToShow = cart.slice(0, maxVisible > 0 ? maxVisible - 1 : 0);
+            
+            // ВИПРАВЛЕНО: Правильний розрахунок кількості видимих елементів
+            const itemsToShow = cart.slice(0, cart.length > maxVisible ? maxVisible - 1 : maxVisible);
+
             itemsToShow.forEach(item => {
                 const miniature = document.createElement('div');
                 miniature.className = 'cart-miniature';
-                miniature.style.backgroundImage = `url(/${item.image_url})`;
+                // ВИПРАВЛЕНО: Беремо перше фото зі списку сторін (_front)
+                const frontImage = item.image_sides.split(',')[0];
+                miniature.style.backgroundImage = `url(/${frontImage})`;
                 cartMiniaturesWrapper.appendChild(miniature);
             });
             if (cart.length > itemsToShow.length) {
@@ -57,6 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+    // --- КІНЕЦЬ ФІНАЛЬНИХ ВИПРАВЛЕНЬ ---
+
     function showAndHideCart() {
         clearTimeout(cartHideTimeout);
         sideCart.classList.add('visible');
@@ -69,17 +73,19 @@ document.addEventListener('DOMContentLoaded', () => {
             allProducts.forEach(product => {
                 const slide = document.createElement('div');
                 slide.className = 'product-slide';
-                slide.innerHTML = `<div class="product-preview" data-product-id="${product.id}"><div class="product-preview-info"><h3>${product.name_ua}</h3><p class="short-description">${product.description_short_ua || ''}</p></div></div>`;
+                const frontImage = product.image_sides.split(',')[0];
+                slide.innerHTML = `<div class="product-preview" data-product-id="${product.id}"><img class="product-preview-img" src="/${frontImage}" alt="${product.name_ua}"><div class="product-preview-info"><h3>${product.name_ua}</h3><p class="short-description">${product.description_short_ua || ''}</p></div></div>`;
                 productsSliderWrapper.appendChild(slide);
             });
             setupSimpleScroller();
             if (allProducts.length > 0) update3DView(0);
         } catch(e) { console.error(e); }
     }
-    
     function setupSimpleScroller() {
         const scroller = productsSliderWrapper;
-        scroller.addEventListener('scroll', () => {
+        scroller.style.scrollBehavior = 'smooth';
+        let isScrolling;
+        const highlightCenter = () => {
             const scrollerRect = scroller.getBoundingClientRect();
             const scrollerCenter = scrollerRect.left + scrollerRect.width / 2;
             let closestElement = null, minDistance = Infinity;
@@ -96,6 +102,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const productIndex = allProducts.findIndex(p => p.id === productId);
                 if (productIndex > -1 && productIndex !== current3DProductIndex) update3DView(productIndex);
             }
+        };
+        scroller.addEventListener('scroll', ()=>{
+            window.clearTimeout(isScrolling);
+            isScrolling = setTimeout(highlightCenter, 150);
         });
         setTimeout(() => { if(scroller.children[0]) scroller.children[0].classList.add('is-active'); }, 100);
     }
