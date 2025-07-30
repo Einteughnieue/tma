@@ -15,17 +15,18 @@
                             <div class="bottom-controls-container">
                                 <div class="product-scroller" id="products-slider-wrapper"></div>
                                 <div class="cart-controls-wrapper"><div class="cart-controls"><button class="quantity-btn" id="decrease-quantity">-</button><span id="quantity-counter">1</span><button class="quantity-btn" id="increase-quantity">+</button><button id="add-to-cart-btn" class="button-63" role="button">Додати</button></div></div>
-                                <div id="cart-miniatures-wrapper" class="cart-miniatures-wrapper"></div>
+                                <div id="cart-miniatures-wrapper" class="cart-miniatures-wrapper">
+                                    <!-- Мініатюри будуть тут -->
+                                    <button id="go-to-cart-btn" class="cart-miniature ellipsis">
+                                        <span class="cart-ellipsis-text">КОШИК</span>
+                                        <span class="cart-ellipsis-dots">...</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div id="page-profile" class="page"><h2>Профіль</h2></div>
-                     <!-- СТОРІНКА КОШИКА-ЗАГЛУШКИ -->
-                    <div id="page-cart" class="page cart-page">
-                        <h2>Повний кошик</h2>
-                        <p>Тут буде детальний вміст вашого кошика.</p>
-                        <button id="back-to-shop-btn" class="action-button green">Назад до магазину</button>
-                    </div>
+                    <div id="page-cart" class="page cart-page"><h2>Повний кошик</h2><p>Тут буде детальний вміст вашого кошика.</p><button id="back-to-shop-btn" class="action-button green">Назад до магазину</button></div>
                 </div>
             </div>
             <nav id="bottom-nav" class="bottom-nav"><button class="nav-btn" data-page-index="0"><span class="icon">ℹ️</span><span class="text">Інфо</span></button><button class="nav-btn active" data-page-index="1"><span class="icon">🛍️</span><span class="text">Замовлення</span></button><button class="nav-btn" data-page-index="2"><span class="icon">👤</span><span class="text">Профіль</span></button></nav>
