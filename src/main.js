@@ -9,9 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const decreaseBtn = document.getElementById('decrease-quantity'), increaseBtn = document.getElementById('increase-quantity'), quantityCounter = document.getElementById('quantity-counter');
     const sideCart = document.getElementById('side-cart'), sideCartContent = document.getElementById('side-cart-content'), cartMiniaturesWrapper = document.getElementById('cart-miniatures-wrapper'), goToCartBtn = document.getElementById('go-to-cart-btn');
     const backToShopBtn = document.getElementById('back-to-shop-btn');
-    const anchorItems = document.querySelectorAll('.anchor-item');
     
-    let allProducts = [], cart = {}, productCategories = {}, currentUser = {}, isAuthorized = false, current3DProductIndex = -1, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout, cartHideTimeout;
+    let allProducts = [], cart = {}, currentUser = {}, isAuthorized = false, current3DProductIndex = -1, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout, cartHideTimeout;
     const DEFAULT_ROTATION_X = -20, DEFAULT_ROTATION_Y = -30, DEFAULT_SCALE = 1.0, RETURN_DELAY = 2000;
     let quantity = 1;
     let lastActivePage = 1;
@@ -75,24 +74,9 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchAndRenderPreviews() {
         try {
             allProducts = await fetch('/api/products').then(res => res.json());
-            const categoriesOrder = ["Ластівка", "Літаюча Ластівка"];
-            const sortedProducts = [];
-            categoriesOrder.forEach(cat => {
-                const categoryProducts = allProducts.filter(p => p.name_ua.includes(cat));
-                if (categoryProducts.length > 0) {
-                    sortedProducts.push(...categoryProducts);
-                    productCategories[cat] = categoryProducts[0].id;
-                }
-            });
-            const others = allProducts.filter(p => !p.name_ua.includes("Ластівка"));
-            if (others.length > 0) {
-                sortedProducts.push(...others);
-                productCategories["♂♀"] = others[0].id;
-            }
-            allProducts = sortedProducts;
-
+            const clonedProducts = [...allProducts, ...allProducts, ...allProducts];
             productsSliderWrapper.innerHTML = '';
-            allProducts.forEach(product => {
+            clonedProducts.forEach(product => {
                 const slide = document.createElement('div');
                 slide.className = 'product-slide';
                 slide.innerHTML = `<div class="product-preview" data-product-id="${product.id}"><div class="product-preview-info"><h3>${product.name_ua}</h3><p class="short-description">${product.description_short_ua || ''}</p></div></div>`;
@@ -126,19 +110,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         };
+        
         const debouncedHighlight = () => {
             clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(highlightCenter, 100); 
+            scrollTimeout = setTimeout(highlightCenter, 100);
+            
+            const itemWidth = scroller.querySelector('.product-slide').offsetWidth;
+            const scrollWidth = scroller.scrollWidth;
+            const scrollLeft = scroller.scrollLeft;
+
+            if (scrollLeft < itemWidth * allProducts.length) {
+                scroller.scrollLeft += itemWidth * allProducts.length;
+            }
+            if (scrollLeft > itemWidth * allProducts.length * 2) {
+                scroller.scrollLeft -= itemWidth * allProducts.length;
+            }
         };
         scroller.addEventListener('scroll', debouncedHighlight);
-        setTimeout(highlightCenter, 100);
-    }
-    
-    function scrollToProduct(productId) {
-        const targetSlide = productsSliderWrapper.querySelector(`.product-slide .product-preview[data-product-id='${productId}']`)?.parentElement;
-        if(targetSlide) {
-            productsSliderWrapper.scrollTo({ left: targetSlide.offsetLeft - productsSliderWrapper.offsetWidth / 2 + targetSlide.offsetWidth / 2, behavior: 'smooth' });
-        }
+        setTimeout(() => { 
+            const itemWidth = scroller.querySelector('.product-slide').offsetWidth;
+            scroller.scrollLeft = itemWidth * allProducts.length;
+            highlightCenter();
+        }, 100);
     }
 
     function update3DView(productIndexOrId) {
@@ -170,14 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     goToCartBtn.addEventListener('click', () => goToPage(3));
     backToShopBtn.addEventListener('click', () => goToPage(lastActivePage));
-
-    anchorItems.forEach(item => item.addEventListener('click', (e) => {
-        anchorItems.forEach(i => i.classList.remove('active'));
-        e.currentTarget.classList.add('active');
-        scrollToProduct(productCategories[e.currentTarget.dataset.category]);
-    }));
-    sliderPrevBtn.addEventListener('click', () => { productsSliderWrapper.scrollBy({ left: -productsSliderWrapper.clientWidth / 2, behavior: 'smooth' }); });
-    sliderNextBtn.addEventListener('click', () => { productsSliderWrapper.scrollBy({ left: productsSliderWrapper.clientWidth / 2, behavior: 'smooth' }); });
 
     interactionZone.addEventListener('mousedown', handleInteractionStart);
     window.addEventListener('mousemove', handleInteractionMove);
