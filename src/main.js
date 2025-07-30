@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const sideCart = document.getElementById('side-cart'), sideCartContent = document.getElementById('side-cart-content'), cartMiniaturesWrapper = document.getElementById('cart-miniatures-wrapper'), goToCartBtn = document.getElementById('go-to-cart-btn');
     const backToShopBtn = document.getElementById('back-to-shop-btn');
     const anchorItems = document.querySelectorAll('.anchor-item');
-    const sliderPrevBtn = document.getElementById('slider-prev-btn'), sliderNextBtn = document.getElementById('slider-next-btn');
     
     let allProducts = [], cart = {}, productCategories = {}, currentUser = {}, isAuthorized = false, current3DProductIndex = -1, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout, cartHideTimeout;
     const DEFAULT_ROTATION_X = -20, DEFAULT_ROTATION_Y = -30, DEFAULT_SCALE = 1.0, RETURN_DELAY = 2000;
@@ -129,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         const debouncedHighlight = () => {
             clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(highlightCenter, 100); 
+            scrollTimeout = setTimeout(highlightCenter, 150); 
         };
         scroller.addEventListener('scroll', debouncedHighlight);
         setTimeout(highlightCenter, 100);
