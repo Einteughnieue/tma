@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sideCart = document.getElementById('side-cart'), sideCartContent = document.getElementById('side-cart-content'), cartMiniaturesWrapper = document.getElementById('cart-miniatures-wrapper'), goToCartBtn = document.getElementById('go-to-cart-btn');
     const backToShopBtn = document.getElementById('back-to-shop-btn');
     
-    let allProducts = [], cart = [], currentUser = {}, isAuthorized = false, current3DProductIndex = -1, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout, cartHideTimeout;
+    let allProducts = [], cart = {}, currentUser = {}, isAuthorized = false, current3DProductIndex = -1, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout, cartHideTimeout;
     const DEFAULT_ROTATION_X = -20, DEFAULT_ROTATION_Y = -30, DEFAULT_SCALE = 1.0, RETURN_DELAY = 2000;
     let quantity = 1;
     let lastActivePage = 1;
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => { appMain.classList.remove('hidden'); appMain.style.opacity = '1'; authGifBackground.style.display = 'none'; }, 500);
         initializeMainApp();
     }
-    function initializeMainApp() { goToPage(1); fetchAndRenderPreviews(); }
+    function initializeMainApp() { goToPage(1); fetchAndRenderPreviews(); updateCart(); }
     function goToPage(pageIndex) {
         if (pageIndex < 3) lastActivePage = pageIndex;
         if (pageWrapper) pageWrapper.style.transform = `translateX(-${pageIndex * 100 / 4}%)`;
@@ -29,29 +29,41 @@ document.addEventListener('DOMContentLoaded', () => {
         tg?.HapticFeedback.impactOccurred('light');
     }
     function addToCart(productId, count) {
-        const productToAdd = allProducts.find(p => p.id === productId);
-        if (productToAdd) { for(let i=0; i < count; i++) cart.push(productToAdd); updateCart(); showAndHideCart(); tg?.HapticFeedback.notificationOccurred('success'); quantity = 1; quantityCounter.textContent = quantity; }
+        if (!allProducts.find(p => p.id === productId)) return;
+        if (cart[productId]) { cart[productId].count += count; } 
+        else { cart[productId] = { product: allProducts.find(p => p.id === productId), count: count }; }
+        updateCart(); showAndHideCart(); tg?.HapticFeedback.notificationOccurred('success');
+        quantity = 1; quantityCounter.textContent = quantity;
+    }
+    function removeFromCart(productId) {
+        if (cart[productId]) {
+            cart[productId].count--;
+            if (cart[productId].count <= 0) { delete cart[productId]; }
+            updateCart(); showAndHideCart();
+        }
     }
     function updateCart() {
+        const cartItems = Object.values(cart);
+        const totalItems = cartItems.reduce((sum, item) => sum + item.count, 0);
+        const totalPrice = cartItems.reduce((sum, item) => sum + (item.product.price * item.count), 0);
         if(sideCartContent){
-            const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
-            if(cart.length === 0){ sideCartContent.innerHTML = 'Кошик порожній'; } 
-            else { sideCartContent.innerHTML = `<strong>Всього: ${cart.length} шт.</strong><br><span>Сума: ${totalPrice.toFixed(2)} грн</span>`; }
+            if (totalItems === 0) { sideCartContent.innerHTML = 'Кошик порожній'; } 
+            else { sideCartContent.innerHTML = `<strong>Всього: ${totalItems} шт.</strong><br><span>Сума: ${totalPrice.toFixed(2)} грн</span>`; }
         }
         if(cartMiniaturesWrapper){
-            const maxVisible = Math.floor(cartMiniaturesWrapper.clientWidth / 58) -1;
-            const miniatures = cartMiniaturesWrapper.querySelectorAll('.cart-miniature:not(.ellipsis)');
-            miniatures.forEach(m => m.remove());
-
-            const itemsToShow = cart.slice(0, maxVisible);
+            cartMiniaturesWrapper.querySelectorAll('.cart-miniature:not(.ellipsis)').forEach(m => m.remove());
+            const maxVisible = Math.floor((cartMiniaturesWrapper.clientWidth - 60) / 58);
+            const itemsToShow = cartItems.slice(0, maxVisible);
             itemsToShow.forEach(item => {
                 const miniature = document.createElement('div');
                 miniature.className = 'cart-miniature';
-                const frontImage = item.image_sides.split(',')[0];
+                const frontImage = item.product.image_sides.split(',')[0];
                 miniature.style.backgroundImage = `url(/${frontImage})`;
+                miniature.innerHTML = `<div class="miniature-counter">${item.count}</div>`;
+                miniature.addEventListener('click', () => removeFromCart(item.product.id));
                 cartMiniaturesWrapper.insertBefore(miniature, goToCartBtn);
             });
-            goToCartBtn.style.display = cart.length > maxVisible || cart.length > 0 ? 'flex' : 'none';
+            goToCartBtn.style.display = 'flex';
         }
     }
     function showAndHideCart() {
@@ -73,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (allProducts.length > 0) update3DView(0);
         } catch(e) { console.error(e); }
     }
-    
     function setupSimpleScroller() {
         const scroller = productsSliderWrapper;
         let scrollTimeout;
@@ -81,11 +92,10 @@ document.addEventListener('DOMContentLoaded', () => {
             clearTimeout(scrollTimeout);
             scrollTimeout = setTimeout(highlightCenter, 150);
         });
-
-        function highlightCenter() {
+        function highlightCenter(){
             const scrollerRect = scroller.getBoundingClientRect();
             const scrollerCenter = scrollerRect.left + scrollerRect.width / 2;
-            let closestElement = null, minDistance = Infinity;
+            let closestElement = null; let minDistance = Infinity;
             scroller.querySelectorAll('.product-slide').forEach(slide => {
                 const slideRect = slide.getBoundingClientRect();
                 const slideCenter = slideRect.left + slideRect.width / 2;
@@ -98,13 +108,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const productId = parseInt(closestElement.querySelector('.product-preview').dataset.productId);
                 const productIndex = allProducts.findIndex(p => p.id === productId);
                 if (productIndex > -1 && productIndex !== current3DProductIndex) {
+                    closestElement.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
                     update3DView(productIndex);
                 }
             }
         };
-        setTimeout(highlightCenter, 100);
+        setTimeout(() => { if(scroller.children[0]){ scroller.children[0].classList.add('is-active'); } }, 100);
     }
-
     function update3DView(productIndex) {
         if (productIndex < 0 || productIndex >= allProducts.length) return; current3DProductIndex = productIndex;
         const product = allProducts[current3DProductIndex], sides = product.image_sides.split(','); if (sides.length < 6) return;
