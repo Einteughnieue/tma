@@ -9,13 +9,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const decreaseBtn = document.getElementById('decrease-quantity'), increaseBtn = document.getElementById('increase-quantity'), quantityCounter = document.getElementById('quantity-counter');
     const sideCart = document.getElementById('side-cart'), sideCartContent = document.getElementById('side-cart-content'), cartMiniaturesWrapper = document.getElementById('cart-miniatures-wrapper'), goToCartBtn = document.getElementById('go-to-cart-btn');
     const backToShopBtn = document.getElementById('back-to-shop-btn');
+    const anchorItems = document.querySelectorAll('.anchor-item');
     const sliderPrevBtn = document.getElementById('slider-prev-btn'), sliderNextBtn = document.getElementById('slider-next-btn');
     
     let allProducts = [], cart = {}, productCategories = {}, currentUser = {}, isAuthorized = false, current3DProductIndex = -1, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout, cartHideTimeout;
     const DEFAULT_ROTATION_X = -20, DEFAULT_ROTATION_Y = -30, DEFAULT_SCALE = 1.0, RETURN_DELAY = 2000;
     let quantity = 1;
     let lastActivePage = 1;
-    let currentCarouselIndex = 0;
 
     function startApp(config) {
         isAuthorized = config.authorized || false; if (isAuthorized) currentUser = config.user;
@@ -76,6 +76,22 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchAndRenderPreviews() {
         try {
             allProducts = await fetch('/api/products').then(res => res.json());
+            const categoriesOrder = ["Ластівка", "Літаюча Ластівка"];
+            const sortedProducts = [];
+            categoriesOrder.forEach(cat => {
+                const categoryProducts = allProducts.filter(p => p.name_ua.includes(cat));
+                if (categoryProducts.length > 0) {
+                    sortedProducts.push(...categoryProducts);
+                    productCategories[cat] = categoryProducts[0].id;
+                }
+            });
+            const others = allProducts.filter(p => !p.name_ua.includes("Ластівка"));
+            if (others.length > 0) {
+                sortedProducts.push(...others);
+                productCategories["♂♀"] = others[0].id;
+            }
+            allProducts = sortedProducts;
+
             productsSliderWrapper.innerHTML = '';
             allProducts.forEach(product => {
                 const slide = document.createElement('div');
@@ -83,45 +99,51 @@ document.addEventListener('DOMContentLoaded', () => {
                 slide.innerHTML = `<div class="product-preview" data-product-id="${product.id}"><div class="product-preview-info"><h3>${product.name_ua}</h3><p class="short-description">${product.description_short_ua || ''}</p></div></div>`;
                 productsSliderWrapper.appendChild(slide);
             });
-            setupCarousel();
+            setupSimpleScroller();
             if (allProducts.length > 0) update3DView(0);
         } catch(e) { console.error(e); }
     }
     
-    function setupCarousel() {
-        const track = productsSliderWrapper;
-        const slides = Array.from(track.children);
-        if (slides.length === 0) return;
-        const slideWidth = slides[0].offsetWidth;
-        const angle = 360 / slides.length;
-        const radius = Math.round((slideWidth / 2) / Math.tan(Math.PI / slides.length));
-
-        slides.forEach((slide, i) => {
-            slide.style.transform = `rotateY(${i * angle}deg) translateZ(${radius}px)`;
-        });
-
-        let currentAngle = 0;
-        
-        const rotateCarousel = () => {
-            track.style.transform = `translateZ(-${radius}px) rotateY(${currentAngle}deg)`;
-            const productIndex = (slides.length - (currentAngle / angle) % slides.length) % slides.length;
-            update3DView(productIndex);
+    function setupSimpleScroller() {
+        const scroller = productsSliderWrapper;
+        let scrollTimeout;
+        const highlightCenter = () => {
+            const scrollerRect = scroller.getBoundingClientRect();
+            const scrollerCenter = scrollerRect.left + scrollerRect.width / 2;
+            let closestElement = null; let minDistance = Infinity;
+            scroller.querySelectorAll('.product-slide').forEach(slide => {
+                const slideRect = slide.getBoundingClientRect();
+                const slideCenter = slideRect.left + slideRect.width / 2;
+                const distance = Math.abs(scrollerCenter - slideCenter);
+                if (distance < minDistance) { minDistance = distance; closestElement = slide; }
+                slide.classList.remove('is-active');
+            });
+            if (closestElement) {
+                closestElement.classList.add('is-active');
+                const productId = parseInt(closestElement.querySelector('.product-preview').dataset.productId);
+                const productIndex = allProducts.findIndex(p => p.id === productId);
+                if (productIndex > -1 && productIndex !== current3DProductIndex) {
+                    update3DView(productIndex);
+                }
+            }
+        };
+        const debouncedHighlight = () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(highlightCenter, 100); 
+        };
+        scroller.addEventListener('scroll', debouncedHighlight);
+        setTimeout(highlightCenter, 100);
+    }
+    
+    function scrollToProduct(productId) {
+        const targetSlide = productsSliderWrapper.querySelector(`.product-slide .product-preview[data-product-id='${productId}']`)?.parentElement;
+        if(targetSlide) {
+            productsSliderWrapper.scrollTo({ left: targetSlide.offsetLeft - productsSliderWrapper.offsetWidth / 2 + targetSlide.offsetWidth / 2, behavior: 'smooth' });
         }
-
-        sliderPrevBtn.addEventListener('click', () => {
-            currentAngle += angle;
-            rotateCarousel();
-        });
-
-        sliderNextBtn.addEventListener('click', () => {
-            currentAngle -= angle;
-            rotateCarousel();
-        });
-
-        rotateCarousel(); // Initial position
     }
 
-    function update3DView(productIndex) {
+    function update3DView(productIndexOrId) {
+        const productIndex = Number.isInteger(productIndexOrId) ? productIndexOrId : allProducts.findIndex(p => p.id === productIndexOrId);
         if (productIndex < 0 || productIndex >= allProducts.length) return; 
         current3DProductIndex = productIndex;
         const product = allProducts[current3DProductIndex], sides = product.image_sides.split(','); if (sides.length < 6) return;
@@ -150,6 +172,14 @@ document.addEventListener('DOMContentLoaded', () => {
     goToCartBtn.addEventListener('click', () => goToPage(3));
     backToShopBtn.addEventListener('click', () => goToPage(lastActivePage));
 
+    anchorItems.forEach(item => item.addEventListener('click', (e) => {
+        anchorItems.forEach(i => i.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        scrollToProduct(productCategories[e.currentTarget.dataset.category]);
+    }));
+    sliderPrevBtn.addEventListener('click', () => { productsSliderWrapper.scrollBy({ left: -productsSliderWrapper.clientWidth / 2, behavior: 'smooth' }); });
+    sliderNextBtn.addEventListener('click', () => { productsSliderWrapper.scrollBy({ left: productsSliderWrapper.clientWidth / 2, behavior: 'smooth' }); });
+    
     interactionZone.addEventListener('mousedown', handleInteractionStart);
     window.addEventListener('mousemove', handleInteractionMove);
     window.addEventListener('mouseup', handleInteractionEnd);
