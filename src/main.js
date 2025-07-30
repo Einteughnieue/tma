@@ -1,6 +1,5 @@
-// ================== ФАЙЛ: /src/main.js (БЕЗ SWIPER, ГАРАНТОВАНО) ================== */
-
-// БІЛЬШЕ НІЯКИХ IMPORT SWIPER
+import Swiper from 'swiper/bundle';
+import 'swiper/css/bundle';
 import './style.css';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -13,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sideCart = document.getElementById('side-cart'), sideCartContent = document.getElementById('side-cart-content'), cartMiniaturesWrapper = document.getElementById('cart-miniatures-wrapper'), goToCartBtn = document.getElementById('go-to-cart-btn');
     const backToShopBtn = document.getElementById('back-to-shop-btn');
     
-    let allProducts = [], cart = {}, currentUser = {}, isAuthorized = false, current3DProductIndex = -1, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout, cartHideTimeout;
+    let allProducts = [], cart = {}, productCategories = {}, currentUser = {}, isAuthorized = false, current3DProductIndex = -1, productSwiper, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout, cartHideTimeout;
     const DEFAULT_ROTATION_X = -20, DEFAULT_ROTATION_Y = -30, DEFAULT_SCALE = 1.0, RETURN_DELAY = 2000;
     let quantity = 1;
     let lastActivePage = 1;
@@ -24,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => { appMain.classList.remove('hidden'); appMain.style.opacity = '1'; authGifBackground.style.display = 'none'; }, 500);
         initializeMainApp();
     }
-    function initializeMainApp() { goToPage(1); fetchAndRenderPreviews(); }
+    function initializeMainApp() { goToPage(1); fetchAndRenderPreviews(); updateCart(); }
     function goToPage(pageIndex) {
         if (pageIndex < 3) lastActivePage = pageIndex;
         if (pageWrapper) pageWrapper.style.transform = `translateX(-${pageIndex * 100 / 4}%)`;
@@ -77,70 +76,27 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchAndRenderPreviews() {
         try {
             allProducts = await fetch('/api/products').then(res => res.json());
-            const clonedProducts = [...allProducts, ...allProducts, ...allProducts]; // Для нескінченної стрічки
             productsSliderWrapper.innerHTML = '';
-            clonedProducts.forEach(product => {
+            allProducts.forEach(product => {
                 const slide = document.createElement('div');
-                slide.className = 'product-slide';
-                slide.innerHTML = `<div class="product-preview" data-product-id="${product.id}"><div class="product-preview-info"><h3>${product.name_ua}</h3><p class="short-description">${product.description_short_ua || ''}</p></div></div>`;
+                slide.className = 'swiper-slide';
+                slide.innerHTML = `<div class="product-preview" data-product-id="${product.id}"><img class="product-preview-img" src="/${product.image_sides.split(',')[0]}" alt="${product.name_ua}"><div class="product-preview-info"><h3>${product.name_ua}</h3><p>${product.description_short_ua || ''}</p></div></div>`;
                 productsSliderWrapper.appendChild(slide);
             });
-            setupSimpleScroller();
-            if (allProducts.length > 0) update3DView(allProducts[0].id);
+            initSwiper();
+            if (allProducts.length > 0) update3DView(0);
         } catch(e) { console.error(e); }
     }
-    
-    function setupSimpleScroller() {
-        const scroller = productsSliderWrapper;
-        let scrollTimeout;
-        const highlightCenter = () => {
-            const scrollerRect = scroller.getBoundingClientRect();
-            const scrollerCenter = scrollerRect.left + scrollerRect.width / 2;
-            let closestElement = null; let minDistance = Infinity;
-            scroller.querySelectorAll('.product-slide').forEach(slide => {
-                const slideRect = slide.getBoundingClientRect();
-                const slideCenter = slideRect.left + slideRect.width / 2;
-                const distance = Math.abs(scrollerCenter - slideCenter);
-                if (distance < minDistance) { minDistance = distance; closestElement = slide; }
-                slide.classList.remove('is-active');
-            });
-            if (closestElement) {
-                closestElement.classList.add('is-active');
-                const productId = parseInt(closestElement.querySelector('.product-preview').dataset.productId);
-                const productIndex = allProducts.findIndex(p => p.id === productId);
-                if (productIndex > -1 && productIndex !== current3DProductIndex) {
-                    update3DView(productIndex);
-                }
-            }
-        };
-        
-        const debouncedHighlight = () => {
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-                highlightCenter();
-                
-                const itemWidth = scroller.querySelector('.product-slide').offsetWidth + 20; // 20 - це margin
-                const scrollWidth = scroller.scrollWidth;
-                const scrollLeft = scroller.scrollLeft;
-                const totalItemsWidth = itemWidth * allProducts.length;
-
-                if (scrollLeft < itemWidth) {
-                    scroller.scrollLeft += totalItemsWidth;
-                }
-                if (scrollLeft > totalItemsWidth * 2 - scroller.clientWidth) {
-                    scroller.scrollLeft -= totalItemsWidth;
-                }
-
-            }, 150);
-        };
-        scroller.addEventListener('scroll', debouncedHighlight);
-        setTimeout(() => { 
-            const itemWidth = scroller.querySelector('.product-slide').offsetWidth + 20;
-            scroller.scrollLeft = itemWidth * allProducts.length;
-            highlightCenter(); 
-        }, 100);
+    function initSwiper() {
+        productSwiper = new Swiper('.product-slider', {
+            effect: 'creative', grabCursor: true, centeredSlides: true, loop: true, slidesPerView: 'auto',
+            creativeEffect: {
+              prev: { shadow: true, origin: 'left center', translate: ['-5%', 0, -200], rotate: [0, 100, 0], },
+              next: { origin: 'right center', translate: ['5%', 0, -200], rotate: [0, -100, 0], },
+            },
+            on: { slideChange: function() { const activeSlide = this.slides[this.activeIndex]; if (!activeSlide) return; const preview = activeSlide.querySelector('.product-preview'); if (!preview) return; const productId = parseInt(preview.dataset.productId); const productIndex = allProducts.findIndex(p => p.id === productId); if(productIndex > -1) update3DView(productIndex); } }
+        });
     }
-
     function update3DView(productIndexOrId) {
         const productIndex = Number.isInteger(productIndexOrId) ? productIndexOrId : allProducts.findIndex(p => p.id === productIndexOrId);
         if (productIndex < 0 || productIndex >= allProducts.length) return; 
@@ -170,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     goToCartBtn.addEventListener('click', () => goToPage(3));
     backToShopBtn.addEventListener('click', () => goToPage(lastActivePage));
-
+    
     interactionZone.addEventListener('mousedown', handleInteractionStart);
     window.addEventListener('mousemove', handleInteractionMove);
     window.addEventListener('mouseup', handleInteractionEnd);
