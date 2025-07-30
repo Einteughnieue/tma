@@ -8,7 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const bottomSheet = document.getElementById('bottom-sheet'), sheetToggleButton = document.getElementById('sheet-toggle-btn');
     const decreaseBtn = document.getElementById('decrease-quantity'), increaseBtn = document.getElementById('increase-quantity'), quantityCounter = document.getElementById('quantity-counter');
     const sideCart = document.getElementById('side-cart'), sideCartContent = document.getElementById('side-cart-content'), cartMiniaturesWrapper = document.getElementById('cart-miniatures-wrapper'), goToCartBtn = document.getElementById('go-to-cart-btn');
-    const backToShopBtn = document.getElementById('back-to-shop-btn'), sliderPrevBtn = document.getElementById('slider-prev-btn'), sliderNextBtn = document.getElementById('slider-next-btn'), anchorItems = document.querySelectorAll('.anchor-item');
+    const backToShopBtn = document.getElementById('back-to-shop-btn');
+    const anchorItems = document.querySelectorAll('.anchor-item');
     
     let allProducts = [], cart = {}, productCategories = {}, currentUser = {}, isAuthorized = false, current3DProductIndex = -1, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout, cartHideTimeout;
     const DEFAULT_ROTATION_X = -20, DEFAULT_ROTATION_Y = -30, DEFAULT_SCALE = 1.0, RETURN_DELAY = 2000;
@@ -122,15 +123,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const productIndex = allProducts.findIndex(p => p.id === productId);
                 if (productIndex > -1 && productIndex !== current3DProductIndex) {
                     update3DView(productIndex);
-                    // Оновлення активної категорії
-                    const currentCategory = Object.keys(productCategories).find(cat => productCategories[cat] === productId) || Object.keys(productCategories).find(cat => allProducts.slice(0,productIndex+1).some(p => p.id === productCategories[cat]));
-                    anchorItems.forEach(item => item.classList.toggle('active', item.dataset.category === currentCategory));
                 }
             }
         };
         const debouncedHighlight = () => {
             clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(highlightCenter, 50);
+            scrollTimeout = setTimeout(highlightCenter, 100); 
         };
         scroller.addEventListener('scroll', debouncedHighlight);
         setTimeout(highlightCenter, 100);
@@ -174,12 +172,13 @@ document.addEventListener('DOMContentLoaded', () => {
     backToShopBtn.addEventListener('click', () => goToPage(lastActivePage));
 
     anchorItems.forEach(item => item.addEventListener('click', (e) => {
-        const category = e.currentTarget.dataset.category;
-        scrollToProduct(productCategories[category]);
+        anchorItems.forEach(i => i.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        scrollToProduct(productCategories[e.currentTarget.dataset.category]);
     }));
     sliderPrevBtn.addEventListener('click', () => { productsSliderWrapper.scrollBy({ left: -productsSliderWrapper.clientWidth / 2, behavior: 'smooth' }); });
     sliderNextBtn.addEventListener('click', () => { productsSliderWrapper.scrollBy({ left: productsSliderWrapper.clientWidth / 2, behavior: 'smooth' }); });
-    
+
     interactionZone.addEventListener('mousedown', handleInteractionStart);
     window.addEventListener('mousemove', handleInteractionMove);
     window.addEventListener('mouseup', handleInteractionEnd);
