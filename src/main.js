@@ -1,3 +1,4 @@
+
 import './style.css';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -39,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cart[productId]) {
             cart[productId].count--;
             if (cart[productId].count <= 0) { delete cart[productId]; }
-            updateCart(); showAndHideCart();
+            updateCart();
         }
     }
     function updateCart() {
@@ -74,25 +75,22 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchAndRenderPreviews() {
         try {
             allProducts = await fetch('/api/products').then(res => res.json());
+            const clonedProducts = [...allProducts, ...allProducts, ...allProducts];
             productsSliderWrapper.innerHTML = '';
-            allProducts.forEach(product => {
+            clonedProducts.forEach(product => {
                 const slide = document.createElement('div');
                 slide.className = 'product-slide';
                 slide.innerHTML = `<div class="product-preview" data-product-id="${product.id}"><div class="product-preview-info"><h3>${product.name_ua}</h3><p class="short-description">${product.description_short_ua || ''}</p></div></div>`;
                 productsSliderWrapper.appendChild(slide);
             });
             setupSimpleScroller();
-            if (allProducts.length > 0) update3DView(0);
+            if (allProducts.length > 0) update3DView(allProducts[0].id);
         } catch(e) { console.error(e); }
     }
     function setupSimpleScroller() {
         const scroller = productsSliderWrapper;
         let scrollTimeout;
-        scroller.addEventListener('scroll', () => {
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(highlightCenter, 150);
-        });
-        function highlightCenter(){
+        const highlightCenter = () => {
             const scrollerRect = scroller.getBoundingClientRect();
             const scrollerCenter = scrollerRect.left + scrollerRect.width / 2;
             let closestElement = null; let minDistance = Infinity;
@@ -108,15 +106,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 const productId = parseInt(closestElement.querySelector('.product-preview').dataset.productId);
                 const productIndex = allProducts.findIndex(p => p.id === productId);
                 if (productIndex > -1 && productIndex !== current3DProductIndex) {
-                    closestElement.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
                     update3DView(productIndex);
                 }
             }
         };
-        setTimeout(() => { if(scroller.children[0]){ scroller.children[0].classList.add('is-active'); } }, 100);
+        const handleScroll = () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(highlightCenter, 100); 
+
+            const scrollWidth = scroller.scrollWidth;
+            const clientWidth = scroller.clientWidth;
+            const scrollLeft = scroller.scrollLeft;
+            const itemWidth = scroller.children[0].offsetWidth + 20;
+            if (scrollLeft < itemWidth) {
+                scroller.scrollLeft += allProducts.length * itemWidth;
+            }
+            if (scrollLeft > scrollWidth - clientWidth - itemWidth) {
+                scroller.scrollLeft -= allProducts.length * itemWidth;
+            }
+        };
+        scroller.addEventListener('scroll', handleScroll);
+        setTimeout(() => { 
+            const itemWidth = scroller.children[0].offsetWidth + 20;
+            scroller.scrollLeft = allProducts.length * itemWidth;
+            highlightCenter(); 
+        }, 100);
     }
-    function update3DView(productIndex) {
-        if (productIndex < 0 || productIndex >= allProducts.length) return; current3DProductIndex = productIndex;
+
+    function update3DView(productIndexOrId) {
+        const productIndex = Number.isInteger(productIndexOrId) ? productIndexOrId : allProducts.findIndex(p => p.id === productIndexOrId);
+        if (productIndex < 0 || productIndex >= allProducts.length) return; 
+        current3DProductIndex = productIndex;
         const product = allProducts[current3DProductIndex], sides = product.image_sides.split(','); if (sides.length < 6) return;
         productBox.querySelector('.front').style.backgroundImage = `url(/${sides[0]})`; productBox.querySelector('.back').style.backgroundImage = `url(/${sides[1]})`; productBox.querySelector('.left').style.backgroundImage = `url(/${sides[2]})`; productBox.querySelector('.right').style.backgroundImage = `url(/${sides[3]})`; productBox.querySelector('.top').style.backgroundImage = `url(/${sides[4]})`; productBox.querySelector('.bottom').style.backgroundImage = `url(/${sides[5]})`;
     }
