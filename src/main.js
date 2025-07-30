@@ -1,5 +1,3 @@
-import Swiper from 'swiper/bundle';
-import 'swiper/css/bundle';
 import './style.css';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -11,11 +9,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const decreaseBtn = document.getElementById('decrease-quantity'), increaseBtn = document.getElementById('increase-quantity'), quantityCounter = document.getElementById('quantity-counter');
     const sideCart = document.getElementById('side-cart'), sideCartContent = document.getElementById('side-cart-content'), cartMiniaturesWrapper = document.getElementById('cart-miniatures-wrapper'), goToCartBtn = document.getElementById('go-to-cart-btn');
     const backToShopBtn = document.getElementById('back-to-shop-btn');
+    const sliderPrevBtn = document.getElementById('slider-prev-btn'), sliderNextBtn = document.getElementById('slider-next-btn');
     
-    let allProducts = [], cart = {}, productCategories = {}, currentUser = {}, isAuthorized = false, current3DProductIndex = -1, productSwiper, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout, cartHideTimeout;
+    let allProducts = [], cart = {}, productCategories = {}, currentUser = {}, isAuthorized = false, current3DProductIndex = -1, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout, cartHideTimeout;
     const DEFAULT_ROTATION_X = -20, DEFAULT_ROTATION_Y = -30, DEFAULT_SCALE = 1.0, RETURN_DELAY = 2000;
     let quantity = 1;
     let lastActivePage = 1;
+    let currentCarouselIndex = 0;
 
     function startApp(config) {
         isAuthorized = config.authorized || false; if (isAuthorized) currentUser = config.user;
@@ -79,26 +79,49 @@ document.addEventListener('DOMContentLoaded', () => {
             productsSliderWrapper.innerHTML = '';
             allProducts.forEach(product => {
                 const slide = document.createElement('div');
-                slide.className = 'swiper-slide';
-                slide.innerHTML = `<div class="product-preview" data-product-id="${product.id}"><img class="product-preview-img" src="/${product.image_sides.split(',')[0]}" alt="${product.name_ua}"><div class="product-preview-info"><h3>${product.name_ua}</h3><p>${product.description_short_ua || ''}</p></div></div>`;
+                slide.className = 'product-slide';
+                slide.innerHTML = `<div class="product-preview" data-product-id="${product.id}"><div class="product-preview-info"><h3>${product.name_ua}</h3><p class="short-description">${product.description_short_ua || ''}</p></div></div>`;
                 productsSliderWrapper.appendChild(slide);
             });
-            initSwiper();
+            setupCarousel();
             if (allProducts.length > 0) update3DView(0);
         } catch(e) { console.error(e); }
     }
-    function initSwiper() {
-        productSwiper = new Swiper('.product-slider', {
-            effect: 'creative', grabCursor: true, centeredSlides: true, loop: true, slidesPerView: 'auto',
-            creativeEffect: {
-              prev: { shadow: true, origin: 'left center', translate: ['-5%', 0, -200], rotate: [0, 100, 0], },
-              next: { origin: 'right center', translate: ['5%', 0, -200], rotate: [0, -100, 0], },
-            },
-            on: { slideChange: function() { const activeSlide = this.slides[this.activeIndex]; if (!activeSlide) return; const preview = activeSlide.querySelector('.product-preview'); if (!preview) return; const productId = parseInt(preview.dataset.productId); const productIndex = allProducts.findIndex(p => p.id === productId); if(productIndex > -1) update3DView(productIndex); } }
+    
+    function setupCarousel() {
+        const track = productsSliderWrapper;
+        const slides = Array.from(track.children);
+        if (slides.length === 0) return;
+        const slideWidth = slides[0].offsetWidth;
+        const angle = 360 / slides.length;
+        const radius = Math.round((slideWidth / 2) / Math.tan(Math.PI / slides.length));
+
+        slides.forEach((slide, i) => {
+            slide.style.transform = `rotateY(${i * angle}deg) translateZ(${radius}px)`;
         });
+
+        let currentAngle = 0;
+        
+        const rotateCarousel = () => {
+            track.style.transform = `translateZ(-${radius}px) rotateY(${currentAngle}deg)`;
+            const productIndex = (slides.length - (currentAngle / angle) % slides.length) % slides.length;
+            update3DView(productIndex);
+        }
+
+        sliderPrevBtn.addEventListener('click', () => {
+            currentAngle += angle;
+            rotateCarousel();
+        });
+
+        sliderNextBtn.addEventListener('click', () => {
+            currentAngle -= angle;
+            rotateCarousel();
+        });
+
+        rotateCarousel(); // Initial position
     }
-    function update3DView(productIndexOrId) {
-        const productIndex = Number.isInteger(productIndexOrId) ? productIndexOrId : allProducts.findIndex(p => p.id === productIndexOrId);
+
+    function update3DView(productIndex) {
         if (productIndex < 0 || productIndex >= allProducts.length) return; 
         current3DProductIndex = productIndex;
         const product = allProducts[current3DProductIndex], sides = product.image_sides.split(','); if (sides.length < 6) return;
@@ -126,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     goToCartBtn.addEventListener('click', () => goToPage(3));
     backToShopBtn.addEventListener('click', () => goToPage(lastActivePage));
-    
+
     interactionZone.addEventListener('mousedown', handleInteractionStart);
     window.addEventListener('mousemove', handleInteractionMove);
     window.addEventListener('mouseup', handleInteractionEnd);
