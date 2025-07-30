@@ -1,4 +1,3 @@
-
 import './style.css';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -9,9 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const bottomSheet = document.getElementById('bottom-sheet'), sheetToggleButton = document.getElementById('sheet-toggle-btn');
     const decreaseBtn = document.getElementById('decrease-quantity'), increaseBtn = document.getElementById('increase-quantity'), quantityCounter = document.getElementById('quantity-counter');
     const sideCart = document.getElementById('side-cart'), sideCartContent = document.getElementById('side-cart-content'), cartMiniaturesWrapper = document.getElementById('cart-miniatures-wrapper'), goToCartBtn = document.getElementById('go-to-cart-btn');
-    const backToShopBtn = document.getElementById('back-to-shop-btn');
+    const backToShopBtn = document.getElementById('back-to-shop-btn'), sliderPrevBtn = document.getElementById('slider-prev-btn'), sliderNextBtn = document.getElementById('slider-next-btn'), anchorItems = document.querySelectorAll('.anchor-item');
     
-    let allProducts = [], cart = {}, currentUser = {}, isAuthorized = false, current3DProductIndex = -1, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout, cartHideTimeout;
+    let allProducts = [], cart = {}, productCategories = {}, currentUser = {}, isAuthorized = false, current3DProductIndex = -1, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout, cartHideTimeout;
     const DEFAULT_ROTATION_X = -20, DEFAULT_ROTATION_Y = -30, DEFAULT_SCALE = 1.0, RETURN_DELAY = 2000;
     let quantity = 1;
     let lastActivePage = 1;
@@ -75,18 +74,34 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchAndRenderPreviews() {
         try {
             allProducts = await fetch('/api/products').then(res => res.json());
-            const clonedProducts = [...allProducts, ...allProducts, ...allProducts];
+            const categoriesOrder = ["Ластівка", "Літаюча Ластівка"];
+            const sortedProducts = [];
+            categoriesOrder.forEach(cat => {
+                const categoryProducts = allProducts.filter(p => p.name_ua.includes(cat));
+                if (categoryProducts.length > 0) {
+                    sortedProducts.push(...categoryProducts);
+                    productCategories[cat] = categoryProducts[0].id;
+                }
+            });
+            const others = allProducts.filter(p => !p.name_ua.includes("Ластівка"));
+            if (others.length > 0) {
+                sortedProducts.push(...others);
+                productCategories["♂♀"] = others[0].id;
+            }
+            allProducts = sortedProducts;
+
             productsSliderWrapper.innerHTML = '';
-            clonedProducts.forEach(product => {
+            allProducts.forEach(product => {
                 const slide = document.createElement('div');
                 slide.className = 'product-slide';
                 slide.innerHTML = `<div class="product-preview" data-product-id="${product.id}"><div class="product-preview-info"><h3>${product.name_ua}</h3><p class="short-description">${product.description_short_ua || ''}</p></div></div>`;
                 productsSliderWrapper.appendChild(slide);
             });
             setupSimpleScroller();
-            if (allProducts.length > 0) update3DView(allProducts[0].id);
+            if (allProducts.length > 0) update3DView(0);
         } catch(e) { console.error(e); }
     }
+    
     function setupSimpleScroller() {
         const scroller = productsSliderWrapper;
         let scrollTimeout;
@@ -107,30 +122,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 const productIndex = allProducts.findIndex(p => p.id === productId);
                 if (productIndex > -1 && productIndex !== current3DProductIndex) {
                     update3DView(productIndex);
+                    // Оновлення активної категорії
+                    const currentCategory = Object.keys(productCategories).find(cat => productCategories[cat] === productId) || Object.keys(productCategories).find(cat => allProducts.slice(0,productIndex+1).some(p => p.id === productCategories[cat]));
+                    anchorItems.forEach(item => item.classList.toggle('active', item.dataset.category === currentCategory));
                 }
             }
         };
-        const handleScroll = () => {
+        const debouncedHighlight = () => {
             clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(highlightCenter, 100); 
-
-            const scrollWidth = scroller.scrollWidth;
-            const clientWidth = scroller.clientWidth;
-            const scrollLeft = scroller.scrollLeft;
-            const itemWidth = scroller.children[0].offsetWidth + 20;
-            if (scrollLeft < itemWidth) {
-                scroller.scrollLeft += allProducts.length * itemWidth;
-            }
-            if (scrollLeft > scrollWidth - clientWidth - itemWidth) {
-                scroller.scrollLeft -= allProducts.length * itemWidth;
-            }
+            scrollTimeout = setTimeout(highlightCenter, 50);
         };
-        scroller.addEventListener('scroll', handleScroll);
-        setTimeout(() => { 
-            const itemWidth = scroller.children[0].offsetWidth + 20;
-            scroller.scrollLeft = allProducts.length * itemWidth;
-            highlightCenter(); 
-        }, 100);
+        scroller.addEventListener('scroll', debouncedHighlight);
+        setTimeout(highlightCenter, 100);
+    }
+    
+    function scrollToProduct(productId) {
+        const targetSlide = productsSliderWrapper.querySelector(`.product-slide .product-preview[data-product-id='${productId}']`)?.parentElement;
+        if(targetSlide) {
+            productsSliderWrapper.scrollTo({ left: targetSlide.offsetLeft - productsSliderWrapper.offsetWidth / 2 + targetSlide.offsetWidth / 2, behavior: 'smooth' });
+        }
     }
 
     function update3DView(productIndexOrId) {
@@ -163,6 +173,13 @@ document.addEventListener('DOMContentLoaded', () => {
     goToCartBtn.addEventListener('click', () => goToPage(3));
     backToShopBtn.addEventListener('click', () => goToPage(lastActivePage));
 
+    anchorItems.forEach(item => item.addEventListener('click', (e) => {
+        const category = e.currentTarget.dataset.category;
+        scrollToProduct(productCategories[category]);
+    }));
+    sliderPrevBtn.addEventListener('click', () => { productsSliderWrapper.scrollBy({ left: -productsSliderWrapper.clientWidth / 2, behavior: 'smooth' }); });
+    sliderNextBtn.addEventListener('click', () => { productsSliderWrapper.scrollBy({ left: productsSliderWrapper.clientWidth / 2, behavior: 'smooth' }); });
+    
     interactionZone.addEventListener('mousedown', handleInteractionStart);
     window.addEventListener('mousemove', handleInteractionMove);
     window.addEventListener('mouseup', handleInteractionEnd);
