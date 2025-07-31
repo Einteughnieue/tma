@@ -131,15 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             scrollTimeout = setTimeout(highlightCenter, 150);
         };
         scroller.addEventListener('scroll', debouncedHighlight);
-        setTimeout(() => { 
-            if(scroller.children[0]) scroller.children[0].classList.add('is-active');
-        }, 100);
-
-        scroller.querySelectorAll('.product-slide').forEach(slide => {
-            slide.addEventListener('click', () => {
-                slide.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-            });
-        });
+        setTimeout(highlightCenter, 100);
     }
     
     function scrollToProduct(productId) {
