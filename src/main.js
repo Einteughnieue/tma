@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const sideCart = document.getElementById('side-cart'), sideCartContent = document.getElementById('side-cart-content'), cartMiniaturesWrapper = document.getElementById('cart-miniatures-wrapper'), goToCartBtn = document.getElementById('go-to-cart-btn');
     const backToShopBtn = document.getElementById('back-to-shop-btn');
     const anchorItems = document.querySelectorAll('.anchor-item');
-    const sliderPrevBtn = document.getElementById('slider-prev-btn'), sliderNextBtn = document.getElementById('slider-next-btn');
     
     let allProducts = [], cart = {}, productCategories = {}, currentUser = {}, isAuthorized = false, current3DProductIndex = -1, isInteracting = false, isDragging = false, isPinching = false, previousX, previousY, rotationX = -20, rotationY = -30, scale = 1.0, returnTimeout, cartHideTimeout;
     const DEFAULT_ROTATION_X = -20, DEFAULT_ROTATION_Y = -30, DEFAULT_SCALE = 1.0, RETURN_DELAY = 2000;
@@ -106,56 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function setupSimpleScroller() {
         const scroller = productsSliderWrapper;
-        let isDown = false;
-        let startX;
-        let scrollLeft;
-        let velX = 0;
-        let momentumID;
-
-        scroller.addEventListener('mousedown', e => {
-            isDown = true;
-            scroller.classList.add('active');
-            startX = e.pageX - scroller.offsetLeft;
-            scrollLeft = scroller.scrollLeft;
-            cancelMomentumTracking();
-        });
-
-        scroller.addEventListener('mouseleave', () => {
-            isDown = false;
-            scroller.classList.remove('active');
-        });
-
-        scroller.addEventListener('mouseup', () => {
-            isDown = false;
-            scroller.classList.remove('active');
-            beginMomentumTracking();
-        });
-
-        scroller.addEventListener('mousemove', e => {
-            if (!isDown) return;
-            e.preventDefault();
-            const x = e.pageX - scroller.offsetLeft;
-            const walk = (x - startX);
-            const prevScrollLeft = scroller.scrollLeft;
-            scroller.scrollLeft = scrollLeft - walk;
-            velX = scroller.scrollLeft - prevScrollLeft;
-        });
-
-        const beginMomentumTracking = () => {
-            cancelMomentumTracking();
-            momentumID = requestAnimationFrame(momentumLoop);
-        };
-        const cancelMomentumTracking = () => {
-            cancelAnimationFrame(momentumID);
-        };
-        const momentumLoop = () => {
-            scroller.scrollLeft += velX;
-            velX *= 0.9; // Friction
-            if (Math.abs(velX) > 0.5) {
-                momentumID = requestAnimationFrame(momentumLoop);
-            }
-        };
-        
         let scrollTimeout;
         const highlightCenter = () => {
             const scrollerRect = scroller.getBoundingClientRect();
@@ -179,16 +128,24 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         const debouncedHighlight = () => {
             clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(highlightCenter, 100); 
+            scrollTimeout = setTimeout(highlightCenter, 150);
         };
         scroller.addEventListener('scroll', debouncedHighlight);
-        setTimeout(highlightCenter, 100);
+        setTimeout(() => { 
+            if(scroller.children[0]) scroller.children[0].classList.add('is-active');
+        }, 100);
+
+        scroller.querySelectorAll('.product-slide').forEach(slide => {
+            slide.addEventListener('click', () => {
+                slide.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            });
+        });
     }
     
     function scrollToProduct(productId) {
         const targetSlide = productsSliderWrapper.querySelector(`.product-slide .product-preview[data-product-id='${productId}']`)?.parentElement;
         if(targetSlide) {
-            productsSliderWrapper.scrollTo({ left: targetSlide.offsetLeft - productsSliderWrapper.offsetWidth / 2 + targetSlide.offsetWidth / 2, behavior: 'smooth' });
+            targetSlide.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
         }
     }
 
@@ -227,8 +184,6 @@ document.addEventListener('DOMContentLoaded', () => {
         e.currentTarget.classList.add('active');
         scrollToProduct(productCategories[e.currentTarget.dataset.category]);
     }));
-    sliderPrevBtn.addEventListener('click', () => { productsSliderWrapper.scrollBy({ left: -productsSliderWrapper.clientWidth / 2, behavior: 'smooth' }); });
-    sliderNextBtn.addEventListener('click', () => { productsSliderWrapper.scrollBy({ left: productsSliderWrapper.clientWidth / 2, behavior: 'smooth' }); });
     
     interactionZone.addEventListener('mousedown', handleInteractionStart);
     window.addEventListener('mousemove', handleInteractionMove);
