@@ -1,32 +1,111 @@
 <!DOCTYPE html>
-<html lang="uk"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"><title>Ластівка Shop</title></head>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>TMA</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- 1. ПОДКЛЮЧАЕМ СТИЛИ SWIPER.JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+</head>
 <body>
-    <div id="auth_gif_background"></div><div id="root">
-        <div id="auth-screen" class="auth-screen visible"><div class="auth-card"><div class="auth-content"><div class="auth-scroll-area"><h1>Вітаємо у веб-магазині "Ластівка"!</h1><p>Увійдіть одразу або при замовленні</p><div class="auth-form"><input type="text" id="auth-name" placeholder="Ім'я*"><input type="text" id="auth-surname" placeholder="Прізвище*"><input type="tel" id="auth-phone" placeholder="Номер телефону*"></div><button id="share-phone-btn" class="action-button blue"><span>📞</span>Надати номер з Телеграму</button><div class="auth-actions"><button id="auth-later-btn" class="action-button gray">Увійти як гість</button><button id="auth-confirm-btn" class="action-button green">Підтвердити</button></div></div></div></div></div>
-        <div id="app-main" class="hidden">
-            <div id="contacts-bar" class="contacts-bar"><span>+380 (</span><img src="/images/sim_operators.jpg" alt="Operators"><span>) 733 4095</span></div>
-            <div id="side-cart" class="side-cart"><div id="side-cart-content">Кошик порожній</div></div>
-            <div class="app-container">
-                <div class="page-wrapper">
-                    <div id="page-info" class="page"><h2>Інфо</h2></div>
-                    <div id="page-orders" class="page orders-page">
-                        <div id="product-view-3d" class="product-view-3d"><div class="interaction-zone"></div><div class="scene"><div id="product-box" class="box"><div class="face front"></div><div class="face back"></div><div class="face left"></div><div class="face right"></div><div class="face top"></div><div class="face bottom"></div></div></div></div>
-                        <div id="bottom-sheet" class="bottom-sheet"><button id="sheet-toggle-btn" class="sheet-toggle-btn"><span class="arrow-up"></span></button>
-                            <div class="bottom-controls-container">
-                                <div class="anchor-slider-container"><div class="anchor-item active" data-category="Ластівка">Ластівка</div><div class="anchor-item" data-category="Літаюча Ластівка">Літаюча Ластівка</div><div class="anchor-item" data-category="♂♀">♂♀</div></div>
-                                <div class="product-scroller" id="products-slider-wrapper"></div>
-                                <div class="cart-controls-wrapper"><div class="cart-controls"><button class="quantity-btn" id="decrease-quantity">-</button><span id="quantity-counter">1</span><button class="quantity-btn" id="increase-quantity">+</button><button id="add-to-cart-btn" class="button-63" role="button">Додати</button></div></div>
-                                <div id="cart-miniatures-wrapper" class="cart-miniatures-wrapper"><button id="go-to-cart-btn" class="cart-miniature ellipsis"><span class="cart-ellipsis-text">КОШИК</span><span class="cart-ellipsis-dots">...</span></button></div>
+    <div class="wrapper">
+        <header class="header">
+            <div class="logo">TMA</div>
+            <div class="cart-button">
+                <img src="img/cart.svg" alt="Cart">
+            </div>
+        </header>
+
+        <main class="main">
+            <div class="product-scene">
+                <!-- 3D МОДЕЛЬ БУДЕТ ЗДЕСЬ -->
+                <div class="product-3d-placeholder">
+                    <p>3D Scene</p>
+                </div>
+
+                <!-- 2. ДОБАВЛЯЕМ СТРЕЛКИ НАВИГАЦИИ -->
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next"></div>
+            </div>
+        </main>
+
+        <div class="bottom-sheet">
+            <div class="handle" id="sheet-handle">
+                <div class="handle-bar"></div>
+                <div class="handle-arrow"></div>
+            </div>
+
+            <div class="sheet-content">
+                <div class="slider-container">
+                    <!-- 3. ИЗМЕНЯЕМ СТРУКТУРУ СЛАЙДЕРА ДЛЯ SWIPER.JS -->
+                    <div class="swiper">
+                        <div class="swiper-wrapper">
+                            <!-- Каждый товар - это swiper-slide -->
+                            <div class="swiper-slide">
+                                <div class="product-card">
+                                    <div class="product-image-container">
+                                        <img src="img/tea1.png" alt="Фиточай 1" class="product-image">
+                                    </div>
+                                    <h3 class="product-name">Фиточай #1</h3>
+                                </div>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="product-card">
+                                    <div class="product-image-container">
+                                        <img src="img/tea2.png" alt="Фиточай 2" class="product-image">
+                                    </div>
+                                    <h3 class="product-name">Фиточай #2</h3>
+                                </div>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="product-card">
+                                    <div class="product-image-container">
+                                        <img src="img/tea3.png" alt="Фиточай 3" class="product-image">
+                                    </div>
+                                    <h3 class="product-name">Фиточай #3</h3>
+                                </div>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="product-card">
+                                    <div class="product-image-container">
+                                        <img src="img/tea4.png" alt="Фиточай 4" class="product-image">
+                                    </div>
+                                    <h3 class="product-name">Фиточай #4</h3>
+                                </div>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="product-card">
+                                    <div class="product-image-container">
+                                        <img src="img/tea5.png" alt="Фиточай 5" class="product-image">
+                                    </div>
+                                    <h3 class="product-name">Фиточай #5</h3>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div id="page-profile" class="page"><h2>Профіль</h2></div>
-                    <div id="page-cart" class="page cart-page"><h2>Повний кошик</h2><p>Тут буде детальний вміст вашого кошика.</p><button id="back-to-shop-btn" class="action-button green">Назад до магазину</button></div>
+                </div>
+
+                <div class="product-details">
+                    <h2 class="product-title-full">Название Товара</h2>
+                    <p class="product-description">
+                        Очень длинное и подробное описание товара, которое рассказывает обо всех его полезных свойствах, составе и способе применения.
+                    </p>
+                    <div class="product-actions">
+                        <div class="quantity-selector">
+                            <button class="quantity-btn minus">-</button>
+                            <span class="quantity-value">1</span>
+                            <button class="quantity-btn plus">+</button>
+                        </div>
+                        <button class="add-to-cart-btn">Додати</button>
+                    </div>
                 </div>
             </div>
-            <nav id="bottom-nav" class="bottom-nav"><button class="nav-btn" data-page-index="0"><span class="icon">ℹ️</span><span class="text">Інфо</span></button><button class="nav-btn active" data-page-index="1"><span class="icon">🛍️</span><span class="text">Замовлення</span></button><button class="nav-btn" data-page-index="2"><span class="icon">👤</span><span class="text">Профіль</span></button></nav>
         </div>
     </div>
-    <script type="module" src="/src/main.js"></script><script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <!-- 4. ПОДКЛЮЧАЕМ СКРИПТ SWIPER.JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
