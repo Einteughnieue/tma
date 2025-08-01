@@ -1,11 +1,10 @@
 :root {
-    /* Стили для темной темы, как на скриншоте */
     --primary-bg: #212832;
     --secondary-text: #8b939f;
     --primary-text: #ffffff;
     --accent-blue: #3696f8;
-    --controls-bg: #353f4d;
-    --button-text: #e0e0e0;
+    --controls-bg: #f9f9f9; /* Изменено на белый */
+    --controls-text: #212832; /* Изменено на темный */
 }
 
 * {
@@ -20,14 +19,14 @@ body, html {
     width: 100%;
     background-color: var(--primary-bg);
     color: var(--primary-text);
-    overflow: hidden; /* Предотвращаем двойной скролл */
+    overflow: hidden;
 }
 
 .wrapper {
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: 15px;
+    padding: 15px 20px; /* Добавлены отступы по бокам */
 }
 
 .header {
@@ -35,68 +34,58 @@ body, html {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    flex-shrink: 0; /* Шапка не должна сжиматься */
+    flex-shrink: 0;
 }
 
-.logo {
-    font-size: 24px;
-    font-weight: bold;
-}
+.logo { font-size: 24px; font-weight: bold; }
+.cart-button svg { cursor: pointer; }
 
-.cart-button svg {
-    cursor: pointer;
-}
-
-/* Основной контент страницы */
 .main-content {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Распределяет пространство */
-    padding: 20px 0;
-    position: relative;
-    width: 100%;
+    justify-content: space-between; /* Главный трюк для расположения */
+    padding: 2vh 0; /* Вертикальные отступы в % от высоты экрана */
 }
 
 .product-display {
-    text-align: left;
-    padding-left: 5px; /* Небольшой отступ слева */
+    padding-left: 5px;
 }
 
 .product-image-wrapper {
-    /* Этот блок для вашей 3D сцены или картинки */
-    height: 120px; /* Задаем высоту для сцены/картинки */
-    margin-bottom: 20px;
+    min-height: 100px;
+    margin-bottom: 10px;
 }
 
 .scene-placeholder {
     color: var(--secondary-text);
-    font-size: 18px;
-    margin-bottom: 10px;
+    font-size: 16px;
+    margin-bottom: 8px;
 }
 
 .product-image {
     width: auto;
-    height: 80px; /* Высота картинки фиточая */
+    height: 60px;
     object-fit: contain;
-    /* По умолчанию скрываем, пока не загрузится из JS */
-    display: none; 
+    display: none;
 }
 
 .product-title {
-    font-size: 32px;
+    font-size: 40px; /* Увеличено для акцента */
     font-weight: bold;
 }
 
-/* Блок с детальным описанием и кнопками */
-.product-info {
-    margin-top: 20px;
+/* Обёртка для нижней части */
+.product-info-wrapper {
+    position: relative; /* Для позиционирования стрелок */
+    padding-bottom: 70px; /* Оставляем место для стрелок */
 }
 
 .info-title {
     font-size: 24px;
-    font-weight: normal;
+    font-weight: 500; /* Немного жирнее */
     margin-bottom: 15px;
+    color: var(--primary-text);
 }
 
 .info-description {
@@ -121,47 +110,71 @@ body, html {
 }
 
 .quantity-btn {
-    width: 30px;
-    height: 30px;
+    width: 35px;
+    height: 35px;
     border: none;
     background: none;
     font-size: 22px;
-    color: var(--button-text);
+    color: var(--controls-text);
     cursor: pointer;
 }
 
 .quantity-value {
     font-size: 18px;
-    padding: 0 10px;
+    font-weight: 600;
+    padding: 0 12px;
+    color: var(--controls-text);
 }
 
 .add-to-cart-btn {
     flex-grow: 1;
-    height: 44px;
+    height: 45px;
     border: none;
     background-color: var(--controls-bg);
-    color: var(--button-text);
+    color: var(--controls-text);
     border-radius: 8px;
     font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
 }
 
-/* Стрелки навигации */
+/* --- СТРЕЛКИ НАВИГАЦИИ (CSS) --- */
 .navigation-arrows {
-    position: absolute; /* Позиционируем относительно .main-content */
-    bottom: 0;
-    left: 0;
-    width: 100%;
+    position: absolute;
+    bottom: -30px; /* Сдвигаем ниже блока с кнопками */
+    left: 50%; /* Центрируем */
+    transform: translateX(-50%);
+    width: 200px; /* Задаем ширину контейнера для стрелок */
     display: flex;
     justify-content: space-between;
-    padding: 20px 10px;
 }
 
 .nav-arrow {
-    border: none;
+    width: 50px;
+    height: 50px;
     background: none;
-    color: var(--accent-blue);
-    font-size: 60px; /* Делаем стрелки большими и заметными */
-    font-weight: 100;
+    border: none;
     cursor: pointer;
+    position: relative;
+}
+/* Рисуем стрелку с помощью псевдоэлемента ::before */
+.nav-arrow::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px; /* Размер "палочек" уголка */
+    height: 20px;
+    border-style: solid;
+    border-color: var(--accent-blue);
+}
+
+.nav-arrow.prev::before {
+    border-width: 0 0 4px 4px; /* Рисуем нижнюю и левую грань */
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.nav-arrow.next::before {
+    border-width: 4px 4px 0 0; /* Рисуем верхнюю и правую грань */
+    transform: translate(-50%, -50%) rotate(45deg);
 }

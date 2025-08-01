@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     
     // --- ДАННЫЕ О ТОВАРАХ ---
-    // В реальном приложении они будут приходить с сервера (из базы данных)
     const products = [
         {
             displayTitle: 'Фиточай #1',
@@ -45,56 +44,37 @@ document.addEventListener('DOMContentLoaded', function () {
     const productDescription = document.getElementById('product-description-full');
 
     // --- ЛОГИКА ПЕРЕКЛЮЧЕНИЯ ---
-
-    let currentIndex = 0; // Индекс текущего товара
-
-    // Функция для обновления всех данных на странице
+    let currentIndex = 0; 
     function updateProductView() {
         const product = products[currentIndex];
-
-        // Обновляем текстовые поля
         productTitle.textContent = product.displayTitle;
         productFullName.textContent = product.fullName;
         productDescription.textContent = product.description;
 
-        // Обновляем картинку
-        // Проверяем, есть ли путь к картинке
         if (product.image) {
             productImage.src = product.image;
             productImage.alt = product.fullName;
-            productImage.style.display = 'block'; // Показываем элемент img
+            productImage.style.display = 'block';
         } else {
-            productImage.style.display = 'none'; // Скрываем, если картинки нет
+            productImage.style.display = 'none';
         }
     }
 
-    // Слушатель для кнопки "Вперед"
     nextButton.addEventListener('click', () => {
-        // Увеличиваем индекс
         currentIndex++;
-        // Если вышли за пределы массива, возвращаемся к началу (бесконечный слайдер)
         if (currentIndex >= products.length) {
             currentIndex = 0;
         }
-        // Обновляем вид
         updateProductView();
     });
 
-    // Слушатель для кнопки "Назад"
     prevButton.addEventListener('click', () => {
-        // Уменьшаем индекс
         currentIndex--;
-        // Если ушли меньше нуля, переходим к последнему элементу
         if (currentIndex < 0) {
             currentIndex = products.length - 1;
         }
-        // Обновляем вид
         updateProductView();
     });
 
-
-    // --- Инициализация ---
-    // При первой загрузке страницы показываем первый товар
     updateProductView();
-
 });
