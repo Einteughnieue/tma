@@ -1,10 +1,11 @@
 :root {
-    --primary-color: #333;
-    --secondary-color: #fff;
-    --accent-color: #4CAF50;
-    --sheet-bg: #f1f1f1;
-    --handle-size: 50px;
-    --closed-sheet-height: 200px; /* Высота видимой части шторки в закрытом состоянии */
+    /* Стили для темной темы, как на скриншоте */
+    --primary-bg: #212832;
+    --secondary-text: #8b939f;
+    --primary-text: #ffffff;
+    --accent-blue: #3696f8;
+    --controls-bg: #353f4d;
+    --button-text: #e0e0e0;
 }
 
 * {
@@ -17,26 +18,24 @@
 body, html {
     height: 100%;
     width: 100%;
-    overflow: hidden;
-    background-color: var(--primary-color);
-    color: var(--secondary-color);
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    overflow: hidden; /* Предотвращаем двойной скролл */
 }
 
 .wrapper {
     display: flex;
     flex-direction: column;
     height: 100%;
+    padding: 15px;
 }
 
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
-    position: fixed;
-    top: 0;
     width: 100%;
-    z-index: 10;
+    flex-shrink: 0; /* Шапка не должна сжиматься */
 }
 
 .logo {
@@ -44,226 +43,71 @@ body, html {
     font-weight: bold;
 }
 
-.cart-button img {
-    width: 28px;
+.cart-button svg {
     cursor: pointer;
 }
 
-.main {
+/* Основной контент страницы */
+.main-content {
     flex-grow: 1;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-}
-
-.product-scene {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-}
-
-.product-3d-placeholder {
-    width: 250px;
-    height: 250px;
-    border: 2px dashed var(--accent-color);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-}
-
-/* --- СТИЛИ ШТОРКИ (BOTTOM SHEET) --- */
-
-.bottom-sheet {
-    position: fixed;
-    bottom: calc(var(--closed-sheet-height) - 100%); /* Начальное положение - видна только часть */
-    left: 0;
-    width: 100%;
-    height: 95%; /* Высота в открытом состоянии */
-    background-color: var(--sheet-bg);
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-    box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
-    z-index: 20;
-    transition: bottom 0.5s cubic-bezier(0.65, 0, 0.35, 1); /* Плавная анимация */
-    color: var(--primary-color);
-}
-
-/* Когда шторка открыта */
-.bottom-sheet.open {
-    bottom: 0;
-}
-
-.handle {
-    width: 100%;
-    height: var(--handle-size);
-    display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    position: absolute;
-    top: 0;
-    left: 0;
-}
-
-.handle-bar {
-    width: 40px;
-    height: 5px;
-    background-color: #ccc;
-    border-radius: 3px;
-    margin-bottom: 8px;
-}
-
-.handle-arrow {
-    width: 20px;
-    height: 20px;
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    transition: transform 0.4s ease; /* Анимация вращения стрелки */
-}
-
-/* Вращаем стрелку при открытии шторки */
-.bottom-sheet.open .handle-arrow {
-    transform: rotate(180deg);
-}
-
-
-.sheet-content {
-    padding-top: var(--handle-size);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-/* --- СТИЛИ СЛАЙДЕРА (SWIPER) --- */
-
-.slider-container {
-    width: 100%;
+    justify-content: space-between; /* Распределяет пространство */
     padding: 20px 0;
-    flex-shrink: 0; /* Предотвращает сжатие слайдера */
-}
-
-.swiper {
+    position: relative;
     width: 100%;
-    height: 100%;
-    padding-top: 10px;
-    padding-bottom: 10px;
 }
 
-.swiper-slide {
-    width: 140px; /* Ширина каждого слайда */
-    height: 140px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.4s ease, opacity 0.4s ease;
-    transform: scale(0.75); /* Уменьшаем неактивные слайды */
-    opacity: 0.5;
+.product-display {
+    text-align: left;
+    padding-left: 5px; /* Небольшой отступ слева */
 }
 
-/* Стили для активного, центрального слайда */
-.swiper-slide-active {
-    transform: scale(1);
-    opacity: 1;
+.product-image-wrapper {
+    /* Этот блок для вашей 3D сцены или картинки */
+    height: 120px; /* Задаем высоту для сцены/картинки */
+    margin-bottom: 20px;
 }
 
-.product-card {
-    width: 100%;
-    height: 100%;
-    background-color: var(--secondary-color);
-    border-radius: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    overflow: hidden;
-    padding: 10px;
-}
-
-.product-image-container {
-    width: 80px;
-    height: 80px;
+.scene-placeholder {
+    color: var(--secondary-text);
+    font-size: 18px;
     margin-bottom: 10px;
 }
 
 .product-image {
-    width: 100%;
-    height: 100%;
+    width: auto;
+    height: 80px; /* Высота картинки фиточая */
     object-fit: contain;
+    /* По умолчанию скрываем, пока не загрузится из JS */
+    display: none; 
 }
 
-.product-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--primary-color);
+.product-title {
+    font-size: 32px;
+    font-weight: bold;
 }
 
-/* --- СТИЛИ СТРЕЛОК НАВИГАЦИИ --- */
-
-.swiper-button-prev,
-.swiper-button-next {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-    width: 44px;
-    height: 44px;
-    cursor: pointer;
-    color: var(--accent-color); /* Цвет стрелок */
+/* Блок с детальным описанием и кнопками */
+.product-info {
+    margin-top: 20px;
 }
 
-/* Позиционирование стрелок */
-.swiper-button-prev {
-    left: 10px;
-}
-
-.swiper-button-next {
-    right: 10px;
-}
-
-
-/* --- ДЕТАЛИ ТОВАРА (в шторке) --- */
-
-.product-details {
-    padding: 0 20px 20px 20px;
-    flex-grow: 1;
-    opacity: 0; /* Скрыто по умолчанию */
-    transition: opacity 0.4s ease;
-    overflow-y: auto;
-}
-
-/* Показываем детали только когда шторка открыта */
-.bottom-sheet.open .product-details {
-    opacity: 1;
-}
-
-
-.product-title-full {
-    font-size: 28px;
+.info-title {
+    font-size: 24px;
+    font-weight: normal;
     margin-bottom: 15px;
-    text-align: center;
 }
 
-.product-description {
+.info-description {
+    color: var(--secondary-text);
     font-size: 16px;
     line-height: 1.5;
-    margin-bottom: 25px;
-    text-align: center;
+    margin-bottom: 30px;
 }
 
 .product-actions {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     gap: 15px;
 }
@@ -271,23 +115,23 @@ body, html {
 .quantity-selector {
     display: flex;
     align-items: center;
-    border: 1px solid #ccc;
-    border-radius: 50px;
+    background-color: var(--controls-bg);
+    border-radius: 8px;
+    padding: 5px;
 }
 
 .quantity-btn {
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     border: none;
     background: none;
-    font-size: 24px;
-    color: var(--primary-color);
+    font-size: 22px;
+    color: var(--button-text);
     cursor: pointer;
 }
 
 .quantity-value {
     font-size: 18px;
-    font-weight: bold;
     padding: 0 10px;
 }
 
@@ -295,15 +139,29 @@ body, html {
     flex-grow: 1;
     height: 44px;
     border: none;
-    background-color: var(--accent-color);
-    color: var(--secondary-color);
-    border-radius: 50px;
+    background-color: var(--controls-bg);
+    color: var(--button-text);
+    border-radius: 8px;
     font-size: 16px;
-    font-weight: bold;
     cursor: pointer;
-    transition: background-color 0.3s ease;
 }
 
-.add-to-cart-btn:hover {
-    background-color: #45a049;
+/* Стрелки навигации */
+.navigation-arrows {
+    position: absolute; /* Позиционируем относительно .main-content */
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 10px;
+}
+
+.nav-arrow {
+    border: none;
+    background: none;
+    color: var(--accent-blue);
+    font-size: 60px; /* Делаем стрелки большими и заметными */
+    font-weight: 100;
+    cursor: pointer;
 }

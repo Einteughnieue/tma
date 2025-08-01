@@ -3,109 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>TMA</title>
+    <title>TMA Phytotea</title>
     <link rel="stylesheet" href="style.css">
-    <!-- 1. ПОДКЛЮЧАЕМ СТИЛИ SWIPER.JS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
 </head>
 <body>
     <div class="wrapper">
         <header class="header">
             <div class="logo">TMA</div>
             <div class="cart-button">
-                <img src="img/cart.svg" alt="Cart">
+                <!-- Я временно заменю вашу иконку на SVG, чтобы она точно отображалась -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
             </div>
         </header>
 
-        <main class="main">
-            <div class="product-scene">
-                <!-- 3D МОДЕЛЬ БУДЕТ ЗДЕСЬ -->
-                <div class="product-3d-placeholder">
-                    <p>3D Scene</p>
+        <main class="main-content">
+            
+            <div class="product-display">
+                <!-- Элементы, которые будут обновляться через JS -->
+                <div class="product-image-wrapper">
+                    <p class="scene-placeholder">3D Scene</p>
+                    <!-- Сюда можно будет вставить <img> для 2D-превью или canvas для 3D -->
+                    <img src="" alt="" class="product-image" id="product-image-display">
                 </div>
-
-                <!-- 2. ДОБАВЛЯЕМ СТРЕЛКИ НАВИГАЦИИ -->
-                <div class="swiper-button-prev"></div>
-                <div class="swiper-button-next"></div>
+                
+                <h2 class="product-title" id="product-title-display">Фиточай #1</h2>
             </div>
+            
+            <div class="product-info">
+                <h3 class="info-title" id="product-name-full">Название Товара</h3>
+                <p class="info-description" id="product-description-full">
+                    Очень длинное и подробное описание товара, которое рассказывает обо всех его полезных свойствах, составе и способе применения.
+                </p>
+
+                <div class="product-actions">
+                    <div class="quantity-selector">
+                        <button class="quantity-btn minus">-</button>
+                        <span class="quantity-value">1</span>
+                        <button class="quantity-btn plus">+</button>
+                    </div>
+                    <button class="add-to-cart-btn">Додати</button>
+                </div>
+            </div>
+
+            <!-- Стрелки навигации теперь здесь, внизу -->
+            <div class="navigation-arrows">
+                <button class="nav-arrow prev" id="prev-btn"><</button>
+                <button class="nav-arrow next" id="next-btn">></button>
+            </div>
+
         </main>
-
-        <div class="bottom-sheet">
-            <div class="handle" id="sheet-handle">
-                <div class="handle-bar"></div>
-                <div class="handle-arrow"></div>
-            </div>
-
-            <div class="sheet-content">
-                <div class="slider-container">
-                    <!-- 3. ИЗМЕНЯЕМ СТРУКТУРУ СЛАЙДЕРА ДЛЯ SWIPER.JS -->
-                    <div class="swiper">
-                        <div class="swiper-wrapper">
-                            <!-- Каждый товар - это swiper-slide -->
-                            <div class="swiper-slide">
-                                <div class="product-card">
-                                    <div class="product-image-container">
-                                        <img src="img/tea1.png" alt="Фиточай 1" class="product-image">
-                                    </div>
-                                    <h3 class="product-name">Фиточай #1</h3>
-                                </div>
-                            </div>
-                            <div class="swiper-slide">
-                                <div class="product-card">
-                                    <div class="product-image-container">
-                                        <img src="img/tea2.png" alt="Фиточай 2" class="product-image">
-                                    </div>
-                                    <h3 class="product-name">Фиточай #2</h3>
-                                </div>
-                            </div>
-                            <div class="swiper-slide">
-                                <div class="product-card">
-                                    <div class="product-image-container">
-                                        <img src="img/tea3.png" alt="Фиточай 3" class="product-image">
-                                    </div>
-                                    <h3 class="product-name">Фиточай #3</h3>
-                                </div>
-                            </div>
-                            <div class="swiper-slide">
-                                <div class="product-card">
-                                    <div class="product-image-container">
-                                        <img src="img/tea4.png" alt="Фиточай 4" class="product-image">
-                                    </div>
-                                    <h3 class="product-name">Фиточай #4</h3>
-                                </div>
-                            </div>
-                            <div class="swiper-slide">
-                                <div class="product-card">
-                                    <div class="product-image-container">
-                                        <img src="img/tea5.png" alt="Фиточай 5" class="product-image">
-                                    </div>
-                                    <h3 class="product-name">Фиточай #5</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="product-details">
-                    <h2 class="product-title-full">Название Товара</h2>
-                    <p class="product-description">
-                        Очень длинное и подробное описание товара, которое рассказывает обо всех его полезных свойствах, составе и способе применения.
-                    </p>
-                    <div class="product-actions">
-                        <div class="quantity-selector">
-                            <button class="quantity-btn minus">-</button>
-                            <span class="quantity-value">1</span>
-                            <button class="quantity-btn plus">+</button>
-                        </div>
-                        <button class="add-to-cart-btn">Додати</button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <!-- 4. ПОДКЛЮЧАЕМ СКРИПТ SWIPER.JS -->
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <!-- Подключаем наш скрипт -->
     <script src="script.js"></script>
 </body>
 </html>
